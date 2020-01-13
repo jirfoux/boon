@@ -3,7 +3,7 @@ Modular JS library. JQuery replacement
 
 ## ajax
 
-### `$.ajax(settings[,success[,error]]);`
+#### `$.ajax(settings[,success[,error]]);`
 
 #### settings:
 * `url` :string - self-explaining
@@ -27,6 +27,6 @@ Modular JS library. JQuery replacement
 #### error:
 * function that is called after failed request `settings.error`
 
-### `$.get(settings[,success[,error]]);`
-### `$.post(settings[,success[,error]]);`
-### `$.json(settings[,success[,error]]);`
+#### `$.get(settings[,success[,error]]);`
+#### `$.post(settings[,success[,error]]);`
+#### `$.json(settings[,success[,error]]);`

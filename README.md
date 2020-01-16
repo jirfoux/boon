@@ -1,7 +1,14 @@
 # boon
 Modular JS library. JQuery replacement
 
-## ajax
+| Library | Requires |
+| --- | --- |
+| boon | - |
+|boon-ajax|boon
+boon-nodebuilder|boon
+
+
+## boon-ajax
 
 #### `$.ajax(settings[,success[,error]]);`
 
@@ -25,8 +32,20 @@ Modular JS library. JQuery replacement
 * function that is called after successful request and takes response as argument, has priority over `settings.success`
 
 #### error:
-* function that is called after failed request `settings.error`
+* function that is called after failed request, has priority over `settings.error`
+
+These methods are just semantic sugar:
 
 #### `$.get(settings[,success[,error]]);`
 #### `$.post(settings[,success[,error]]);`
 #### `$.json(settings[,success[,error]]);`
+
+## boon-nodebuilder
+
+#### `$.newNodeBuilder(tag)`
+* creates a new NodeBuilder
+    * `attr(key, value)`
+    * `clazz(value)`
+    * `id(value)`
+    * `node(value)`
+    * `html(value)`

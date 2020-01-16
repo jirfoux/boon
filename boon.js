@@ -1,4 +1,7 @@
 "use strict";
+const _distinct = (elements) => {
+    return [...new Set(elements)];
+}
 class Boon {
     constructor(elements) {
         if (!Array.isArray(elements))
@@ -19,9 +22,8 @@ class Boon {
         return this.elements;
     }
     copy() {
-        return new Boon(this.elements.slice());
+        return new Boon(this.elements);
     }
-
     //+++CLASS+++
     addClass(c) {
         return this.each(element => element.classList.add(c));
@@ -33,9 +35,37 @@ class Boon {
         return this.each(element => element.classList.toggle(c));
     }
     //---CLASS---
+    //+++NAVIGATION+++
     parent() {
-        return new Boon([...new Set(this.elements.map(element => element.parentElement).filter(e => e))]);
+        return new Boon(_distinct(this.elements.map(element => element.parentElement).filter(e => e)));
     }
+    children() {
+        return new Boon(_distinct(this.elements
+            .flatMap(element => Array.from(element.childNodes))
+            .filter(e => e && e.nodeType == Node.ELEMENT_NODE)));
+    }
+    siblings() {
+        return new Boon(_distinct(this.elements
+            .map(element => element.parentElement)
+            .flatMap(element => Array.from(element.childNodes))
+            .filter(e => e && e.nodeType == Node.ELEMENT_NODE)));
+    }
+    find(selector) {
+        return new Boon(_distinct(Array.from(this.elements.map(element => element.querySelectorAll(selector))).map(nodeList => Array.from(nodeList)).flat()));
+    }
+    filter(predicate) {
+        return new Boon(this.elements.filter(e => {
+            if (typeof predicate == "string") {
+                return e.matches(predicate);
+            } else if (typeof predicate == "function") {
+                return predicate(e);
+            }
+        }));
+    }
+    map(mapper) {
+        return new Boon(this.elements.map(e => mapper(e)).filter(e => e instanceof Node));
+    }
+    //---NAVIGATION---
     //+++EVENT+++
     on(type, listener) {
         return this.each(element => element.addEventListener(type, listener));
@@ -54,17 +84,42 @@ class Boon {
     }
     //---EVENT---
     show() {
-        return this.each(element => element.style.display = null);
+        return this.css("display", "");
     }
     hide() {
-        return this.each(element => element.style.display = "none");
+        return this.css("display", "none");
     }
-    find(selector) {
-        return new Boon([...new Set(Array.from(this.elements.map(element => element.querySelectorAll(selector))).map(nodeList => Array.from(nodeList)).flat())]);
+    toggle() {
+        if (this.css("display" == "none")) {
+            this.show();
+        } else {
+            this.hide();
+        }
+        return this;
+    }
+    css(property, value) {
+        if (value === undefined) {
+            let element = this[0];
+            if (element) {
+                return element.style[property];
+            }
+        } else {
+            return this.each(element => element.style[property] = value);
+        }
+    }
+    html(value) {
+        if (value === undefined) {
+            let element = this[0];
+            if (element) {
+                return element.innerHTML;
+            }
+        } else {
+            return this.each(element => element.innerHTML = value || "");
+        }
     }
     attr(attribute, value) {
         if (value === undefined) {
-            let element = this.getElement();
+            let element = this[0];
             if (element) {
                 return element.getAttribute(attribute);
             }
@@ -74,26 +129,29 @@ class Boon {
     }
     prop(property, value) {
         if (value === undefined) {
-            let element = this.getElement();
+            let element = this[0];
             if (element) {
                 return element[property];
             }
         } else {
-            return this.each(element => element[property] = value);
+            return this.each(element => element[property] = value || "");
         }
     }
     val(value) {
         return this.prop("value", value);
     }
-    filter(predicate) {
-        return new Boon(this.elements.filter(predicate));
+    remove() {
+        this.each(element => element.remove());
+        delete this;
     }
 }
 const boon = function (value, argument) {
     if (!value) return;
     let valueType = typeof value;
     if (value instanceof Boon) {
-        return new Boon(value.elements);
+        return new Boon(value.elements.slice());
+    } else if (value instanceof NodeList) {
+        return new Boon(Array.from(value))
     } else
         if (valueType == "function") {
             if (document.readyState == "complete") {

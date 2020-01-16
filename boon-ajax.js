@@ -1,4 +1,4 @@
-
+"use strict";
 boon.ajax = function (settings, success, error) {
     if (typeof settings != "object") { throw new Error("wrong settings"); }
     let contentType;
@@ -48,7 +48,7 @@ boon.ajax = function (settings, success, error) {
         url += (window.location.search ? "&" : "?")
             + Object.entries(settings.params || {}).map(e => {
                 let val = e[1];
-                if (val == undefined || val == null) {
+                if (val === undefined || val === null) {
                     return;
                 }
                 if (typeof val == "object") {

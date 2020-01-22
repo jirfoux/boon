@@ -67,8 +67,8 @@ class Boon {
     }
     //---NAVIGATION---
     //+++EVENT+++
-    on(type, listener) {
-        return this.each(element => element.addEventListener(type, listener));
+    on(type, listener, capture) {
+        return this.each(element => element.addEventListener(type, listener, capture));
     }
     click(listener) {
         return this.on("click", listener);

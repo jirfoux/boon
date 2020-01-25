@@ -18,31 +18,33 @@ boon.ajax = function (settings, success, error) {
         accept += ",*/*;q=0.1"
     }
 
-    let xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
             let result = settings.responseConverter ? settings.responseConverter(this.response) : this.response;
             if (this.status >= 200 && this.status < 300) {
                 if (success) {
-                    success(result);
+                    success(result, xhr);
                 } else if (settings.success) {
-                    settings.success(result);
+                    settings.success(result, xhr);
                 }
             } else {
                 if (error) {
-                    error(result);
+                    error(result, xhr);
                 } else {
                     const func = settings.error || settings.fail;
                     if (func) {
-                        func();
+                        func(result, xhr);
                     }
                 }
             }
 
         }
     };
-    xhttp.onloadend = settings.post;
-    xhttp.timeout = typeof settings.timeout == "number" ? settings.timeout : 0;
+    if (settings.post) {
+        xhr.onloadend = () => settings.post(xhr);
+    }
+    xhr.timeout = typeof settings.timeout == "number" ? settings.timeout : 0;
     let url = settings.url || "";
     if (typeof settings.params == "object") {
         url += (window.location.search ? "&" : "?")
@@ -57,22 +59,22 @@ boon.ajax = function (settings, success, error) {
                 return e[0] + "=" + encodeURIComponent(val);
             }).join("&");
     }
-    xhttp.open(settings.method || "get", url, true);
+    xhr.open(settings.method || "get", url, true);
     if (settings.pre) { settings.pre(); }
     if (accept) {
-        xhttp.setRequestHeader("Accept", accept);
+        xhr.setRequestHeader("Accept", accept);
     }
     if (contentType) {
-        xhttp.setRequestHeader("Content-Type", contentType);
+        xhr.setRequestHeader("Content-Type", contentType);
     }
     if (settings.mime) {
-        xhttp.setRequestHeader("Accept", mime);
-        xhttp.setRequestHeader("Content-Type", mime);
+        xhr.setRequestHeader("Accept", mime);
+        xhr.setRequestHeader("Content-Type", mime);
     }
     for (let [key, value] of Object.entries(settings.headers || {})) {
-        xhttp.setRequestHeader(key, value);
+        xhr.setRequestHeader(key, value);
     }
-    return xhttp.send(typeof settings.data == "object" ? JSON.stringify(settings.data) : (settings.data || "").toString());
+    return xhr.send(typeof settings.data == "object" ? JSON.stringify(settings.data) : (settings.data || "").toString());
 }
 boon.get = (settings, success, error) => {
     settings.method = "get";

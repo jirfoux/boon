@@ -1,4 +1,9 @@
 "use strict";
+if (document.documentMode) {
+    setInterval(() => {
+        document.body.innerHTML = "<h1>Internet Explorer is not supported</h1>";
+    }, 3000);
+}
 const _distinct = (elements) => {
     return [...new Set(elements)];
 }

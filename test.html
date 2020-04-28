@@ -14,12 +14,78 @@
 <body>
 
 
-    <h2>ajax<p>tag</p><span>2</span>
+    <h2>ajax
+        <p>tag</p>
+        <span>2</span>
+        Rest
     </h2>
+    <input type="checkbox" name="e" id="e">
+    <div style="display: none;">
+
+        <header>
+            <img src="/images/9/99/Selfhtml-beispiel-logo.png" alt="logo">
+            <h1>Grid Layout mit feststehendem Footer</h1>
+        </header>
+
+        <nav>
+            <h2>Navigation</h2>
+            <ul>
+                <li><a href="#link_1.html">Startseite</a></li>
+                <li><a href="#link_2.html">Unterseite 1</a></li>
+                <li><a href="#link_3.html">Unterseite 2</a></li>
+                <li><a href="#link_4.html">Kontakt</a></li>
+            </ul>
+        </nav>
+
+        <aside id="news">
+            <h2>Top-News</h2>
+            <p>Gestern gab's Freibier!</p>
+        </aside>
+
+        <article>
+            <h2>CSS-basierte Grid Layouts</h2>
+            <p>Grid Layout ist wie Flexbox eine sehr moderne und einfache Möglichkeit, responsive und flexible Layouts
+                zu erstellen, ohne feste Größenangaben und weitere CSS-Einstellungen wie position, float oder clear
+                nutzen zu müssen.
+            </p>
+            <p>Dabei können Elemente beliebig innerhalb eines Rasters platziert werden, wenn gewünscht, auch
+                übereinander.
+            </p>
+            <p>Grid Layout wird in allen modernen Browsern (und mit vendor-prefix -ms- auch in IE10, IE11 und Edge)
+                unterstützt.</p>
+        </article>
+
+        <aside>
+            <h2>Weiterführende Links</h2>
+            <ul>
+                <li><a href="https://blog.selfhtml.org/">Blog</a></li>
+                <li><a href="https://wiki.selfhtml.org/">Doku</a></li>
+                <li><a href="https://forum.selfhtml.org/">Forum</a></li>
+            </ul>
+        </aside>
+
+
+
+        <footer>
+            <a href="#kontakt.html">Kontakt</a>
+            <p>© 2017 SELFHTML</p>
+        </footer>
+
+
+    </div>
     <script>
+        const o = { alter: "verwalter", r: [111, 11, 1], neu: { viel: 9, q: "Moooh", elf: ["ja", "yes", "si"] } }
+        document.write(boon.serialize(o))
+        boon(() => {
+            boon.post({
+                url: "https://httpbin.org/post?ooo=o",
+                data: { test: 99, v: "VV", t: { roll: "gandalf" } }
+            }, e => console.log())
+        });
+        boon(console.log,9)
     </script>
     <a href="http://www.google.de">alpha</a>
-    <img src="https://www.google.de/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="d"/>
+    <img src="https://www.google.de/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="d" />
 
 </body>
 

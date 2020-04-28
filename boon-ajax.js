@@ -1,18 +1,17 @@
 "use strict";
 boon.ajax = function (settings, success, error) {
     if (typeof settings != "object") { throw new Error("wrong settings"); }
-    let contentType;
     let accept;
     let dataType = (settings.dataType || "").toLowerCase();
     if (!dataType || dataType == "text" || dataType == "txt") {
     } else if (dataType == "json") {
-        accept = contentType = "application/json";
+        accept = "application/json";
     } else if (dataType == "xml") {
-        accept = contentType = "application/xml";
+        accept = "application/xml";
     } else if (dataType == "css") {
-        accept = contentType = "text/css";
+        accept = "text/css";
     } else if (dataType == "html") {
-        accept = contentType = "application/xhtml+xml";
+        accept = "application/xhtml+xml";
     }
     if (accept) {
         accept += ",*/*;q=0.1"
@@ -46,26 +45,15 @@ boon.ajax = function (settings, success, error) {
     }
     xhr.timeout = typeof settings.timeout == "number" ? settings.timeout : 0;
     let url = settings.url || "";
+    let u = document.createElement("a");
+    u.href = url;
     if (typeof settings.params == "object") {
-        url += (window.location.search ? "&" : "?")
-            + Object.entries(settings.params || {}).map(e => {
-                let val = e[1];
-                if (val === undefined || val === null) {
-                    return;
-                }
-                if (typeof val == "object") {
-                    val = JSON.stringify(val);
-                }
-                return e[0] + "=" + encodeURIComponent(val);
-            }).join("&");
+        url += (u.search ? "&" : "?") + this.serialize(settings.params);
     }
     xhr.open(settings.method || "get", url, true);
-    if (settings.pre) { settings.pre(); }
+    if (settings.pre) { settings.pre(xhr); }
     if (accept) {
         xhr.setRequestHeader("Accept", accept);
-    }
-    if (contentType) {
-        xhr.setRequestHeader("Content-Type", contentType);
     }
     if (settings.mime) {
         xhr.setRequestHeader("Accept", mime);
@@ -74,7 +62,35 @@ boon.ajax = function (settings, success, error) {
     for (let [key, value] of Object.entries(settings.headers || {})) {
         xhr.setRequestHeader(key, value);
     }
-    return xhr.send(typeof settings.data == "object" ? JSON.stringify(settings.data) : (settings.data || "").toString());
+    xhr.send(new URLSearchParams(this.serialize(settings.data || {})));
+    return xhr;
+}
+
+boon.serialize = function (obj) {
+    const data = [];
+    function iter(o, path) {
+        if (o == null) {
+            return;
+        }
+        if (Array.isArray(o)) {
+            o.forEach(function (a) {
+                iter(a, path + "[]");
+            });
+        } else if (typeof o == "object") {
+            Object.keys(o).forEach(function (k) {
+                iter(o[k], path + "[" + k + "]");
+            });
+        } else {
+            data.push(path + "=" + o);
+        }
+    }
+    Object.keys(obj).forEach(function (k) {
+        iter(obj[k], k);
+    });
+    return data.join("&");
+};
+boon._join = function (path, key) {
+    return path != null ? path + "[" + key + "]" : key;
 }
 boon.get = (settings, success, error) => {
     settings.method = "get";
@@ -85,7 +101,13 @@ boon.post = (settings, success, error) => {
     boon.ajax(settings, success, error);
 };
 boon.json = (settings, success, error) => {
-    settings.responseConverter = JSON.parse;
+    if (settings.responseConverter) {
+        const old = settings.responseConverter;
+        settings.responseConverter = data => old(JSON.parse(data));
+
+    } else {
+        settings.responseConverter = JSON.parse;
+    }
     settings.dataType = "json";
     boon.get(settings, success, error);
 };

@@ -10,17 +10,17 @@ boon-nodebuilder|boon
 
 ## boon-ajax
 
-#### `$.ajax(settings[,success[,error]]);`
+#### `boon.ajax(settings[,success[,error]]);`
 
 #### settings:
 * `url` :string - self-explaining
 * `dataType` :string - type of data that you expect (currently: text, txt, json, xml, html)
-* `success(response[,xhr])` :function - function that is called after successful request and takes response as argument
-* `error(response[,xhr])` :function - function that is called after failed request
-* `fail(response[,xhr])` :function - alias for `error`
+* `success(response,xhr)` :function - function that is called after successful request and takes response as argument
+* `error(response,xhr)` :function - function that is called after failed request
+* `fail(response,xhr)` :function - alias for `error`
 * `method` :string - http request method (get, post, ...)
-* `pre()` :function - function that is called before sending
-* `post()` :function - function that is called after request is finished
+* `pre(xhr)` :function - function that is called before sending
+* `post(xhr)` :function - function that is called after request is finished
 * `timeout` :number - number for timeout in milliseconds
 * `mime` :string - MIME-type for request, overrides `dataType`
 * `headers` :object - object with headers, overrides `dataType` and `mime`
@@ -36,13 +36,13 @@ boon-nodebuilder|boon
 
 These methods are just semantic sugar:
 
-#### `$.get(settings[,success[,error]]);`
-#### `$.post(settings[,success[,error]]);`
-#### `$.json(settings[,success[,error]]);`
+#### `boon.get(settings[,success[,error]]);`
+#### `boon.post(settings[,success[,error]]);`
+#### `boon.json(settings[,success[,error]]);`
 
 ## boon-nodebuilder
 
-#### `$.newNodeBuilder(tag)`
+#### `boon.newNodeBuilder(tag)`
 * creates a new NodeBuilder
     * `attr(key, value)`
     * `clazz(value)`

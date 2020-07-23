@@ -3,7 +3,7 @@
 if (document.documentMode) {
     setInterval(() => {
         document.body.innerHTML = "<h1>Internet Explorer is not supported</h1>";
-    }, 3000);
+    }, 1000);
 }
 class Boon {
     constructor(elements) {
@@ -172,7 +172,7 @@ class Boon {
             });
         }
     }
-    //apply function for first element
+    //apply function for first element and return result
     _a(func) {
         let element = this[0];
         if (element) {

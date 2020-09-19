@@ -1,16 +1,42 @@
-# boon
-Modular JS library. JQuery replacement
+# booon
+
+### github
+![](https://badgen.net/github/watchers/jirfoux/booon)
+![](https://badgen.net/github/stars/jirfoux/booon)
+![](https://badgen.net/github/commits/jirfoux/booon)
+![](https://badgen.net/github/last-commit/jirfoux/booon)
+![](https://badgen.net/github/license/jirfoux/booon)
+### npm
+![](https://badgen.net/npm/v/booon)
+![](https://badgen.net/npm/dw/booon)
+
+![](https://badgen.net/jsdelivr/hits/npm/booon)
+
+<!--![](https://badgen.net/badge/IE8/compatible/)-->
+
+![](https://badgen.net/badge/Happy/Scrum/pink)
+
+![](https://badgen.net/badge/Use/as/008e9b?scale=0.9)
+![](https://badgen.net/badge/many/badges/2da7d3?scale=0.9)
+![](https://badgen.net/badge/as/possible/00daee?scale=0.9)
+
+[![](https://badgen.net/badge/Thx/Badgen/556b2f?scale=2)](https://badgen.net/)
+
+It is similiar to JQuery, but worse.
+I do not recommend using this library. If you are looking for an alternative to JQuery, click [here](https://www.educba.com/jquery-alternatives/).
 
 | Library | Requires |
 | --- | --- |
-| boon | - |
-|boon-ajax|boon
-boon-nodebuilder|boon
+| booon | - |
+|booon-ajax|booon
+|booon-nodebuilder|booon
+
+## booon ⛰️
 
 
-## boon-ajax
+## booon-ajax 📨
 
-#### `boon.ajax(settings[,success[,error]]);`
+#### `booon.ajax(settings[,success[,error]]);`
 
 #### settings:
 * `url` :string - self-explaining
@@ -36,13 +62,13 @@ boon-nodebuilder|boon
 
 These methods are just semantic sugar:
 
-#### `boon.get(settings[,success[,error]]);`
-#### `boon.post(settings[,success[,error]]);`
-#### `boon.json(settings[,success[,error]]);`
+#### `booon.get(settings[,success[,error]]);`
+#### `booon.post(settings[,success[,error]]);`
+#### `booon.json(settings[,success[,error]]);`
 
-## boon-nodebuilder
+## booon-nodebuilder 🛠️
 
-#### `boon.newNodeBuilder(tag)`
+#### `booon.newNodeBuilder(tag)`
 * creates a new NodeBuilder
     * `attr(key, value)`
     * `clazz(value)`

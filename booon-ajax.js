@@ -1,5 +1,5 @@
 "use strict";
-boon.ajax = function (settings, success, error) {
+booon.ajax = function (settings, success, error) {
     if (typeof settings != "object") { throw new Error("wrong settings"); }
     let accept;
     let dataType = (settings.dataType || "").toLowerCase();
@@ -20,7 +20,12 @@ boon.ajax = function (settings, success, error) {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (this.readyState == 4) {
-            let result = settings.responseConverter ? settings.responseConverter(this.response) : this.response;
+            let result;
+            try {
+                result = settings.responseConverter ? settings.responseConverter(this.response) : this.response
+            } catch (e) {
+                err(e);
+            }
             if (this.status >= 200 && this.status < 300) {
                 if (success) {
                     success(result, xhr);
@@ -28,22 +33,24 @@ boon.ajax = function (settings, success, error) {
                     settings.success(result, xhr);
                 }
             } else {
-                if (error) {
-                    error(result, xhr);
-                } else {
-                    const func = settings.error || settings.fail;
-                    if (func) {
-                        func(result, xhr);
-                    }
-                }
+                err(result);
             }
-
         }
     };
+    function err(obj) {
+        if (error) {
+            error(obj, xhr);
+        } else {
+            const func = settings.error || settings.fail;
+            if (func) {
+                func(obj, xhr);
+            }
+        }
+    }
+    xhr.ontimeout = (e) => err(e);
     if (settings.post) {
         xhr.onloadend = () => settings.post(xhr);
     }
-    xhr.timeout = typeof settings.timeout == "number" ? settings.timeout : 0;
     let url = settings.url || "";
     let u = document.createElement("a");
     u.href = url;
@@ -51,6 +58,7 @@ boon.ajax = function (settings, success, error) {
         url += (u.search ? "&" : "?") + this.serialize(settings.params);
     }
     xhr.open(settings.method || "get", url, true);
+    xhr.timeout = typeof settings.timeout == "number" ? settings.timeout : 0;
     if (settings.pre) { settings.pre(xhr); }
     if (accept) {
         xhr.setRequestHeader("Accept", accept);
@@ -66,7 +74,7 @@ boon.ajax = function (settings, success, error) {
     return xhr;
 }
 
-boon.serialize = function (obj) {
+booon.serialize = function (obj) {
     const data = [];
     function iter(o, path) {
         if (o == null) {
@@ -89,18 +97,18 @@ boon.serialize = function (obj) {
     });
     return data.join("&");
 };
-boon._join = function (path, key) {
+booon._join = function (path, key) {
     return path != null ? path + "[" + key + "]" : key;
 }
-boon.get = (settings, success, error) => {
+booon.get = (settings, success, error) => {
     settings.method = "get";
-    boon.ajax(settings, success, error);
+    booon.ajax(settings, success, error);
 };
-boon.post = (settings, success, error) => {
+booon.post = (settings, success, error) => {
     settings.method = "post";
-    boon.ajax(settings, success, error);
+    booon.ajax(settings, success, error);
 };
-boon.json = (settings, success, error) => {
+booon.json = (settings, success, error) => {
     if (settings.responseConverter) {
         const old = settings.responseConverter;
         settings.responseConverter = data => old(JSON.parse(data));
@@ -109,5 +117,5 @@ boon.json = (settings, success, error) => {
         settings.responseConverter = JSON.parse;
     }
     settings.dataType = "json";
-    boon.get(settings, success, error);
+    booon.get(settings, success, error);
 };

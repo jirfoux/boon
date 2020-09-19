@@ -1,0 +1,37 @@
+{
+  "name": "booon",
+  "version": "1.0.0",
+  "description": "Modular JS library. JQuery replacement",
+  "keywords": [
+    "modular",
+    "dom",
+    "ajax",
+    "selector",
+    "jquery",
+    "no",
+    "alternative",
+    "browser"
+  ],
+  "homepage": "https://github.com/Jelenkee/booon#readme",
+  "scripts": {
+    "test": "tap -J test/*.js",
+    "lint": "node node_modules/eslint/bin/eslint.js .",
+    "lintfix": "npm run lint -- --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jelenkee/booon"
+  },
+  "author": "Jelenkee",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "browserify": "^16.5.2",
+    "eslint": "^7.9.0",
+    "jest": "^26.4.2",
+    "jsdom": "^16.4.0",
+    "mocha": "^8.1.3",
+    "tap": "^14.10.8",
+    "terser": "^5.3.2"
+  }
+}

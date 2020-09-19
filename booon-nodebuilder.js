@@ -77,7 +77,7 @@ class NodeBuilder {
             });
         }
         if (parent) {
-            let p = boon(parent)[0];
+            let p = booon(parent)[0];
             if (p) {
                 p.appendChild(result);
             }
@@ -85,6 +85,6 @@ class NodeBuilder {
         return result;
     }
 }
-boon.newNodeBuilder = function (tag) {
+booon.newNodeBuilder = function (tag) {
     return new NodeBuilder(tag);
 }

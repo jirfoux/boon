@@ -5,7 +5,7 @@ if (document.documentMode) {
         document.body.innerHTML = "<h1>Internet Explorer is not supported</h1>";
     }, 1000);
 }
-class Boon {
+class Booon {
     constructor(elements) {
         if (!Array.isArray(elements))
             throw new Error("no array");
@@ -25,6 +25,7 @@ class Boon {
         return this.elements.slice();
     }
     //+++CLASS+++
+    //TODO accept array
     addClass(c) {
         return this.each(element => element.classList.add(c));
     }
@@ -37,10 +38,10 @@ class Boon {
     //---CLASS---
     //+++NAVIGATION+++
     parent() {
-        return boon(boon._distinct(this.elements.map(element => element.parentElement)));
+        return booon(booon._distinct(this.elements.map(element => element.parentElement)));
     }
     children() {
-        return boon(boon._distinct(this.elements
+        return booon(booon._distinct(this.elements
             .flatMap(element => Array.from(element.childNodes))));
     }
     siblings() {
@@ -55,21 +56,24 @@ class Boon {
             }
             return siblings;
         };
-        return boon(boon._distinct(this.elements
+        return booon(booon._distinct(this.elements
             .flatMap(element => s(element))
         ));
 
-        /*return boon(boon._distinct(this.elements
+        /*return booon(booon._distinct(this.elements
             .map(element => element.parentElement)
             .filter(element => element)
             .flatMap(element => Array.from(element.childNodes))));*/
     }
+    siblingsIncl() {
+
+    }
     find(selector) {
-        return boon(boon._distinct(this.elements
+        return booon(booon._distinct(this.elements
             .flatMap(element => Array.from(element.querySelectorAll(selector)))));
     }
     filter(predicate) {
-        return boon(this.elements.filter(e => {
+        return booon(this.elements.filter(e => {
             if (typeof predicate == "string") {
                 return e.matches(predicate);
             } else if (typeof predicate == "function") {
@@ -78,10 +82,10 @@ class Boon {
         }));
     }
     limit(num) {
-        return boon(this.elements.slice(0, num))
+        return booon(this.elements.slice(0, num))
     }
     map(mapper) {
-        return boon(this.mapToArray(mapper));
+        return booon(this.mapToArray(mapper));
     }
     mapToArray(mapper) {
         return this.elements.map(e => mapper(e));
@@ -90,6 +94,13 @@ class Boon {
     //+++EVENT+++
     on(type, listener, capture) {
         return this.each(element => element.addEventListener(type, listener, capture));
+    }
+    once(type, listener, capture) {
+        const wrapped = e => {
+            this.each(element => element.removeEventListener(type, wrapped, capture));
+            listener(e);
+        }
+        return this.each(element => element.addEventListener(type, wrapped, capture));
     }
     click(listener) {
         return this.on("click", listener);
@@ -110,8 +121,9 @@ class Boon {
     hide() {
         return this.css("display", "none");
     }
-    toggle() {
-        if (this.css("display") == "none") {
+    toggle(visible) {
+        const show = visible !== undefined ? Boolean(visible) : this.css("display") == "none";
+        if (show) {
             this.show();
         } else {
             this.hide();
@@ -180,21 +192,25 @@ class Boon {
         }
     }
     merge(value) {
-        const newBoon = boon(value);
-        const newElements = newBoon.elements;
+        const newBooon = booon(value);
+        const newElements = newBooon.elements;
         this.each(element => { if (!newElements.includes(element)) newElements.push(element); });
-        return boon(newElements);
+        return booon(newElements);
     }
+    //TODO
+    // first(), last(), hasClass
 }
-const boon = function (value, argument) {
-    if (!value) return new Boon([]);
+const booon = function (value, argument) {
+    // TODO ...args
+    console.log(typeof arguments);
+    if (!value) return new Booon([]);
     let valueType = typeof value;
-    if (value instanceof Boon) {
+    if (value instanceof Booon) {
         return value;
     } else if (value instanceof NodeList) {
-        return new Boon(Array.from(value))
+        return new Booon(Array.from(value))
     } else if (Array.isArray(value)) {
-        return new Boon(value.filter(boon._validNode))
+        return new Booon(value.filter(booon._validNode))
     } else
         if (valueType == "function") {
             if (document.readyState == "complete") {
@@ -202,14 +218,15 @@ const boon = function (value, argument) {
             } else {
                 document.addEventListener("DOMContentLoaded", () => value(argument));
             }
-        } else if (boon._validNode(value)) {
-            return new Boon([value]);
+        } else if (booon._validNode(value)) {
+            return new Booon([value]);
         } else if (valueType == "string") {
-            return boon((argument || document).querySelectorAll(value));
+            return booon((argument || document).querySelectorAll(value));
         } else {
-            return new Boon([]);
+            return new Booon([]);
         }
 }
-boon._distinct = (elements) => { return [...new Set(elements)]; }
-boon._validNode = node => node && (node.nodeType == Node.ELEMENT_NODE || node.nodeType == Node.DOCUMENT_NODE);
-window.boon = boon;
+booon._distinct = (elements) => { return [...new Set(elements)]; }
+booon._validNode = node => node && (node.nodeType == Node.ELEMENT_NODE || node.nodeType == Node.DOCUMENT_NODE);
+// @ts-ignore
+window.booon = booon;

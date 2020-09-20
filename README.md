@@ -9,10 +9,9 @@
 ### npm
 ![](https://badgen.net/npm/v/booon)
 ![](https://badgen.net/npm/dw/booon)
+![](https://badgen.net/npm/license/booon)
 
 ![](https://badgen.net/jsdelivr/hits/npm/booon)
-
-<!--![](https://badgen.net/badge/IE8/compatible/)-->
 
 ![](https://badgen.net/badge/Happy/Scrum/pink)
 
@@ -20,10 +19,10 @@
 ![](https://badgen.net/badge/many/badges/2da7d3?scale=0.9)
 ![](https://badgen.net/badge/as/possible/00daee?scale=0.9)
 
-[![](https://badgen.net/badge/Thx/Badgen/b5652f)](https://badgen.net/)
-
 It is similiar to JQuery, but worse.
 I do not recommend using this library. If you are looking for an alternative to JQuery, click [here](https://www.educba.com/jquery-alternatives/).
+
+Probably _not_ compatible with ![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Internet_Explorer_10%2B11_logo.svg/20px-Internet_Explorer_10%2B11_logo.svg.png).
 
 | Library | Requires |
 | --- | --- |
@@ -41,17 +40,16 @@ TODO
 
 #### settings:
 * `url` :string - self-explaining
-* `dataType` :string - type of data that you expect (currently: text, txt, json, xml, html)
 * `success(response,xhr)` :function - function that is called after successful request and takes response as argument
-* `error(response,xhr)` :function - function that is called after failed request
-* `fail(response,xhr)` :function - alias for `error`
+* `error(response|error,xhr)` :function - function that is called after failed request
+* `fail(response|error,xhr)` :function - alias for `error`
 * `method` :string - http request method (get, post, ...)
 * `pre(xhr)` :function - function that is called before sending
 * `post(xhr)` :function - function that is called after request is finished
 * `timeout` :number - number for timeout in milliseconds
-* `mime` :string - MIME-type for request, overrides `dataType`
-* `headers` :object - object with headers, overrides `dataType` and `mime`
-* `data` :object - object with data to send
+* `accept` :string - Accept-type for request
+* `headers` :object - object with headers, overrides `accept`
+* `data` :object|string - object with data to send
 * `params` :object - object with params that will be added to the url, objects will be stringified
 * `responseConverter(rawResponse)` :function - function that will convert the response
 
@@ -69,7 +67,7 @@ These methods are just semantic sugar:
 
 ## booon-nodebuilder 🛠️
 
-#### `booon.newNodeBuilder(tag)`
+#### `booon.nodeBuilder(tag)`
 * creates a new NodeBuilder
     * `attr(key, value)`
     * `clazz(value)`

@@ -1,23 +1,6 @@
 "use strict";
-(function() {
+(function () {
     booon.ajax = function (settings, success, error) {
-        if (typeof settings != "object") { throw new Error("wrong settings"); }
-        let accept;
-        let dataType = (settings.dataType || "").toLowerCase();
-        if (!dataType || dataType == "text" || dataType == "txt") {
-        } else if (dataType == "json") {
-            accept = "application/json";
-        } else if (dataType == "xml") {
-            accept = "application/xml";
-        } else if (dataType == "css") {
-            accept = "text/css";
-        } else if (dataType == "html") {
-            accept = "application/xhtml+xml";
-        }
-        if (accept) {
-            accept += ",*/*;q=0.1";
-        }
-    
         let xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (this.readyState == 4) {
@@ -25,7 +8,7 @@
                 try {
                     result = settings.responseConverter ? settings.responseConverter(this.response) : this.response;
                 } catch (e) {
-                    err(e);
+                    return err(e);
                 }
                 if (this.status >= 200 && this.status < 300) {
                     if (success) {
@@ -33,7 +16,7 @@
                     } else if (settings.success) {
                         settings.success(result, xhr);
                     }
-                } else {
+                } else if (this.status >= 400) {
                     err(result);
                 }
             }
@@ -50,7 +33,13 @@
         }
         xhr.ontimeout = (e) => err(e);
         if (settings.post) {
-            xhr.onloadend = () => settings.post(xhr);
+            xhr.onloadend = () => {
+                try {
+                    settings.post(xhr);
+                } catch (e) {
+                    err(e);
+                }
+            };
         }
         let url = settings.url || "";
         let u = document.createElement("a");
@@ -60,41 +49,45 @@
         }
         xhr.open(settings.method || "get", url, true);
         xhr.timeout = typeof settings.timeout == "number" ? settings.timeout : 0;
-        if (settings.pre) { settings.pre(xhr); }
-        if (accept) {
-            xhr.setRequestHeader("Accept", accept);
+        if (settings.pre) {
+            try {
+                settings.pre(xhr);
+            } catch (e) {
+                err(e);
+            }
         }
-        if (settings.mime) {
-            xhr.setRequestHeader("Accept", mime);
-            xhr.setRequestHeader("Content-Type", mime);
+        if (settings.accept) {
+            xhr.setRequestHeader("Accept", settings.accept);
         }
         for (let [key, value] of Object.entries(settings.headers || {})) {
             xhr.setRequestHeader(key, value);
         }
-        xhr.send(new URLSearchParams(serialize(settings.data || {})));
+        let toSend = null;
+        if (typeof settings.data === "string") {
+            xhr.setRequestHeader("Content-Type", "text/plain");
+            toSend = settings.data;
+        } else if (settings.data && ["URLSearchParams", "FormData"].includes(settings.data.constructor.name)) {
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            toSend = settings.data;
+        } else if (typeof settings.data === "object") {
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            toSend = serialize(settings.data);
+        }
+        xhr.send(toSend);
         return xhr;
     };
-    
-    function serialize (obj) {
+
+    function serialize(obj) {
         const data = [];
-        function iter(o, path) {
-            if (o == null) {
-                return;
-            }
-            if (Array.isArray(o)) {
-                o.forEach(function (a) {
-                    iter(a, path + "[]");
-                });
-            } else if (typeof o == "object") {
-                Object.keys(o).forEach(function (k) {
-                    iter(o[k], path + "[" + k + "]");
-                });
-            } else {
-                data.push(path + "=" + o);
-            }
-        }
+        const enc = encodeURIComponent;
+
         Object.keys(obj).forEach(function (k) {
-            iter(obj[k], k);
+            const element = obj[k];
+            if (Array.isArray(element)) {
+                element.forEach(e => data.push(enc(k) + "=" + enc(e)));
+            } else {
+                data.push(enc(k) + "=" + enc(element));
+            }
         });
         return data.join("&");
     }

@@ -1,5 +1,5 @@
 "use strict";
-(function() {
+(function () {
     class NodeBuilder {
         constructor(tag) {
             this.tag = tag;
@@ -14,7 +14,7 @@
         }
         clazz(clazz) {
             let classes = this.classes || (this.classes = []);
-            classes.push(clazz);
+            classes.push(...(Array.isArray(clazz) ? clazz : [clazz]));
             return this;
         }
         html(html) {
@@ -36,9 +36,12 @@
                 result += this.attrs.map(attr => attr.k + "=\"" + attr.v + "\"").join(" ");
             }
             result += ">";
-    
+
             if (this.htmll) {
-                result += this.htmll || "";
+                if (this.htmll instanceof NodeBuilder) {
+                    this.htmll = this.htmll.buildString();
+                }
+                result += this.htmll;
             }
             if (this.nodes) {
                 result += this.nodes.map(node => {
@@ -47,7 +50,7 @@
                     } else if (node instanceof NodeBuilder) {
                         return node.buildString();
                     } else if (typeof node == "object" && node.nodeType == Node.ELEMENT_NODE) {
-                        return node.innerHTML;
+                        return node.outerHTML;
                     }
                     return "";
                 }).join(" ");
@@ -64,7 +67,10 @@
                 this.attrs.forEach(attr => result.setAttribute(attr.k, attr.v));
             }
             if (this.htmll) {
-                result.innerHTML = this.htmll;
+                if (this.htmll instanceof NodeBuilder) {
+                    this.htmll = this.htmll.buildString();
+                }
+                result.innerHTML = this.htmll || "";
             }
             if (this.nodes) {
                 this.nodes.forEach(node => {

@@ -3,7 +3,7 @@ const test = tap.test;
 const { getDom, getBooon } = require("./dom");
 
 test("basic", t => {
-    t.plan(4);
+    t.plan(5);
     const booon = getBooon();
     const dom = getDom();
     const div1 = dom.window.document.getElementById("what");
@@ -15,4 +15,6 @@ test("basic", t => {
     booon(divs).each(() => count++);
     t.equal(count, 2);
     t.equal(booon("#what>*").mapToArray(n => n.tagName.length).reduce((t, c) => t + c, 0), 8);
+
+    t.equal(booon(".w").children().last.id, "when");
 });

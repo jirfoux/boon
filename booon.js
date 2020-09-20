@@ -1,4 +1,3 @@
-// @ts-check
 "use strict";
 window.booon = (function () {
     class Booon {
@@ -20,7 +19,13 @@ window.booon = (function () {
         get all() {
             return this.elements.slice();
         }
-        //+++CLASS+++
+        get last() {
+            return this.elements[this.length - 1];
+        }
+        mapToArray(mapper) {
+            return this.elements.map(e => mapper(e));
+        }
+        // ---class---
         addClass(clazz) {
             return this.each(element => element.classList.add(...toArray(clazz)));
         }
@@ -33,8 +38,7 @@ window.booon = (function () {
         hasClass(clazz) {
             return this.elements.some(element => element.classList.contains(clazz));
         }
-        //---CLASS---
-        //+++NAVIGATION+++
+        // ---transform---
         parent() {
             return booon(distinct(this.elements.map(element => element.parentElement)));
         }
@@ -90,11 +94,7 @@ window.booon = (function () {
             this.each(element => { if (!newElements.includes(element)) newElements.push(element); });
             return booon(newElements);
         }
-        //---NAVIGATION---
-        mapToArray(mapper) {
-            return this.elements.map(e => mapper(e));
-        }
-        //+++EVENT+++
+        // ---event---
         on(type, listener, capture) {
             return this.each(element => element.addEventListener(type, listener, capture));
         }
@@ -117,7 +117,7 @@ window.booon = (function () {
             }
             return this;
         }
-        //---EVENT---
+        // ---manipulation---
         show() {
             return this.css("display", "");
         }
@@ -187,9 +187,6 @@ window.booon = (function () {
                 });
             }
         }
-       
-        //TODO
-        // first(), last(), hasClass
     }
 
     function first(booon, func) {
@@ -220,8 +217,7 @@ window.booon = (function () {
             return new Booon(Array.from(value));
         } else if (Array.isArray(value)) {
             return new Booon(value.filter(validNode));
-        } else
-        if (valueType == "function") {
+        } else if (valueType == "function") {
             if (document.readyState == "complete") {
                 value(...args);
             } else {

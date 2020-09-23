@@ -10,13 +10,14 @@
     "jquery",
     "no",
     "alternative",
-    "browser"
+    "browser","nodebuilder"
   ],
   "homepage": "https://github.com/Jelenkee/booon#readme",
   "scripts": {
     "test": "tap -J -t 300 test/*.js",
     "lint": "node node_modules/eslint/bin/eslint.js .",
-    "lintfix": "npm run lint -- --fix"
+    "lintfix": "npm run lint -- --fix",
+    "minify":"npx terser booon.js -m -c -o dist/booon.min.js;npx terser booon-ajax.js -m -c -o dist/booon-ajax.min.js;npx terser booon-nodebuilder.js -m -c -o dist/booon-nodebuilder.min.js"
   },
   "repository": {
     "type": "git",

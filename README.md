@@ -1,12 +1,12 @@
 # booon
 
-### github
+### [github](https://github.com/Jelenkee/booon)
 ![](https://badgen.net/github/watchers/Jelenkee/booon)
 ![](https://badgen.net/github/stars/Jelenkee/booon)
 ![](https://badgen.net/github/commits/Jelenkee/booon)
 ![](https://badgen.net/github/last-commit/Jelenkee/booon)
 ![](https://badgen.net/github/license/Jelenkee/booon)
-### npm
+### [npm](https://www.npmjs.com/package/booon)
 ![](https://badgen.net/npm/v/booon)
 ![](https://badgen.net/npm/dw/booon)
 ![](https://badgen.net/npm/license/booon)
@@ -27,8 +27,9 @@ Probably _not_ compatible with ![](https://upload.wikimedia.org/wikipedia/common
 | Library | Requires |
 | --- | --- |
 | booon | - |
-|booon-ajax|booon
-|booon-nodebuilder|booon
+|booon-ajax|-|
+|booon-nodebuilder|booon|
+|booon-adapt|booon|
 
 ## booon ⛰️
 
@@ -48,7 +49,7 @@ TODO
 * `post(xhr)` :function - function that is called after request is finished
 * `timeout` :number - number for timeout in milliseconds
 * `accept` :string - Accept-type for request
-* `headers` :object - object with headers, overrides `accept`
+* `headers` :object - object with headers
 * `data` :object|string - object with data to send
 * `params` :object - object with params that will be added to the url, objects will be stringified
 * `responseConverter(rawResponse)` :function - function that will convert the response

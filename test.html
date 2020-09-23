@@ -8,6 +8,7 @@
     <script src="booon.js"></script>
     <script src="booon-ajax.js"></script>
     <script src="booon-nodebuilder.js"></script>
+    <script src="booon-adapt.js"></script>
     <title>Tests</title>
 </head>
 
@@ -76,15 +77,52 @@
     <script>
         const o = { alter: "verwalter", r: [111, 11, 1], neu: { viel: 9, q: "Moooh", elf: ["ja", "yes", "si"] } }
         booon(() => {
-            booon.post({
+            /*booon.post({
                 url: "https://httpbin.org/post?ooo=o",
                 data: { test: 99, v: "VV", t: { roll: "gandalf" } }
-            }, e => console.log(e));
+            }, e => console.log(e));*/
         });
         booon(console.log, 9)
     </script>
     <a href="http://www.google.de">alpha</a>
     <img src="https://www.google.de/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="d" />
+    <p id="testobject">
+        <span b-bind:class="calc">Karl</span>
+        sieben
+        <div>wild</div>
+    </p>
+    <script>
+        let app = booon.adapt({
+            el: "#testobject",
+            data: {
+                is: false,
+                as:true,
+                arr: [3, 4]
+            },
+            watch: {
+                is: (a, b) => {
+                    console.log(this);
+                },
+                as:function (a,b){
+                    console.log(a,b);
+                }
+            },
+            methods: {
+                calc: function (k) {
+                    return new Date().toISOString()+k;
+                }
+            }
+        })
+    </script>
+    <style>
+        .ja {
+            background-color: aqua;
+        }
+
+        .nein {
+            background-color: palegreen;
+        }
+    </style>
 
 </body>
 

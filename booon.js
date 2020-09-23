@@ -1,29 +1,32 @@
 "use strict";
 window.booon = (function () {
+    if (window.booon) {
+        throw new Error("window.booon is already defined.");
+    }
     class Booon {
         constructor(elements) {
             if (!Array.isArray(elements))
                 throw new Error("no array");
-            this.elements = Array.from(elements);
-            for (let i = 0; i < this.elements.length; i++) {
-                this[i] = this.elements[i];
+            this.es = Array.from(elements);
+            for (let i = 0; i < this.es.length; i++) {
+                this[i] = this.es[i];
             }
         }
         each(func) {
-            this.elements.forEach(element => func(element));
+            this.es.forEach(element => func(element));
             return this;
         }
         get length() {
-            return this.elements.length;
+            return this.es.length;
         }
         get all() {
-            return this.elements.slice();
+            return this.es.slice();
         }
         get last() {
-            return this.elements[this.length - 1];
+            return this.es[this.length - 1];
         }
         mapToArray(mapper) {
-            return this.elements.map(e => mapper(e));
+            return this.es.map(e => mapper(e));
         }
         // ---class---
         addClass(clazz) {
@@ -36,19 +39,19 @@ window.booon = (function () {
             return this.each(element => toArray(clazz).forEach(c => element.classList.toggle(c)));
         }
         hasClass(clazz) {
-            return this.elements.some(element => element.classList.contains(clazz));
+            return this.es.some(element => element.classList.contains(clazz));
         }
         // ---transform---
         parent() {
-            return booon(distinct(this.elements.map(element => element.parentElement)));
+            return booon(distinct(this.es.map(element => element.parentElement)));
         }
         children() {
-            return booon(distinct(this.elements
+            return booon(distinct(this.es
                 .flatMap(element => Array.from(element.childNodes))));
         }
         siblings(inclusive) {
             if (inclusive) {
-                return booon(distinct(this.elements
+                return booon(distinct(this.es
                     .map(element => element.parentElement)
                     .filter(element => element)
                     .flatMap(element => Array.from(element.childNodes))));
@@ -64,17 +67,17 @@ window.booon = (function () {
                     }
                     return siblings;
                 }
-                return booon(distinct(this.elements
+                return booon(distinct(this.es
                     .flatMap(element => s(element))
                 ));
             }
         }
         find(selector) {
-            return booon(distinct(this.elements
+            return booon(distinct(this.es
                 .flatMap(element => Array.from(element.querySelectorAll(selector)))));
         }
         filter(predicate) {
-            return booon(this.elements.filter(e => {
+            return booon(this.es.filter(e => {
                 if (typeof predicate == "string") {
                     return e.matches(predicate);
                 } else if (typeof predicate == "function") {
@@ -83,14 +86,14 @@ window.booon = (function () {
             }));
         }
         limit(num) {
-            return booon(this.elements.slice(0, num));
+            return booon(this.es.slice(0, num));
         }
         map(mapper) {
             return booon(distinct(this.mapToArray(mapper)));
         }
         merge(value) {
             const newBooon = booon(value);
-            const newElements = newBooon.elements;
+            const newElements = newBooon.es;
             this.each(element => { if (!newElements.includes(element)) newElements.push(element); });
             return booon(newElements);
         }

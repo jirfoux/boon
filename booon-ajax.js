@@ -1,5 +1,8 @@
 "use strict";
 (function () {
+    if (!window.booon) {
+        window.booon = {};
+    }
     booon.ajax = function (settings, success, error) {
         let xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {

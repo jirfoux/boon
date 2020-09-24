@@ -86,30 +86,40 @@
     </script>
     <a href="http://www.google.de">alpha</a>
     <img src="https://www.google.de/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="d" />
-    <p id="testobject">
-        <span b-bind:class="calc">Karl</span>
-        sieben
+    <div id="testobject">
+        <span b-bind:class="as">Karl</span>
+        siebe n {{f}} mal {{as}}
+        <p b-html="as+' _ '+as"></p>
+        <input type="text" b-model="as" value="win">
         <div>wild</div>
-    </p>
+        <span b-visible="is">mies</span>
+    </div>
     <script>
+        //document.querySelector("#testobject").addEventListener("click", console.log)
+        document.querySelector("#testobject>input").addEventListener("input", function (e) {
+            console.log(e);
+            console.log(this.value);
+        })
+        //document.querySelector("#testobject>input").addEventListener("change", console.log)
         let app = booon.adapt({
             el: "#testobject",
             data: {
                 is: false,
-                as:true,
-                arr: [3, 4]
+                as: true,
+                arr: [3, 4],
+                f: "fin"
             },
             watch: {
                 is: (a, b) => {
                     console.log(this);
                 },
-                as:function (a,b){
-                    console.log(a,b);
+                as: function (a, b) {
+                    console.log(a, b);
                 }
             },
             methods: {
                 calc: function (k) {
-                    return new Date().toISOString()+k;
+                    return new Date().toISOString() + k;
                 }
             }
         })

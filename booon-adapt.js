@@ -6,25 +6,25 @@
             // el, data, watch, methods, options
             if (!opts.options) { opts.options = {}; }
             this._options = Object.freeze(opts);
-            ["methods", "watch", "el", "options"].forEach(name => Object.freeze(opts[name] || {}));
+            ["methods", "watch", "el", "options", "validators"].forEach(name => Object.freeze(opts[name] || {}));
             this._data = enrichData(this, opts.data || {}, opts.methods || {});
             let that = this;
             this._funcPrefix = (() => {
+                const pref = k => "const " + k + "=this." + k + ";";
                 let res = "";
                 Object.keys(opts.data || {}).forEach(k => {
-                    res += "const " + k + "=this." + k + ";";
+                    res += pref(k);
                 });
                 Object.keys(opts.methods || {}).forEach(k => {
-                    res += "const " + k + "=this." + k + ";";
+                    res += pref(k);
                 });
                 return res;
             })();
 
             setInterval(() => {
-                if (this._render) {
-                    this._render = false;
+                if (this._dirty) {
+                    this._dirty = false;
                     applyDOMChanges(this);
-                    //recreateEl(this);
                 }
             }, 1000 / 5 /*TODO 15*/);
 
@@ -33,7 +33,7 @@
                 if (!that._el || that._el == document.body || that._el == document.body.parentElement) {
                     throw new Error("no valid el");
                 }
-                that._render = true;
+                that._dirty = true;
                 scan(that);
             });
         }
@@ -48,10 +48,17 @@
                 Object.defineProperty(adapt, key, {
                     set: function (x) {
                         const old = data[key];
+                        const validationResult = callValidator(adapt, key, x);
+                        if (validationResult !== undefined) {
+                            if (validationResult !== x) {
+                                adapt._dirty = true
+                            }
+                            x = validationResult;
+                        }
                         data[key] = x;
                         if (old !== x) {
                             callWatcher(adapt, key, old, x);
-                            adapt.render = true;
+                            adapt._dirty = true;
                         }
                     },
                     get: function () {
@@ -78,60 +85,75 @@
                 adapt._options.watch[key].apply(adapt, [oldValue, newValue]);
             }
         }
-        adapt._render = true;
+    }
+    function callValidator(adapt, key, newValue) {
+        if (adapt._options.validators) {
+            if (adapt._options.validators[key]) {
+                return adapt._options.validators[key].apply(adapt, [newValue]);
+            }
+        }
     }
 
     function applyDOMChanges(adapt, changes) {
         adapt._updateFunctions.forEach(uf => {
-            if (uf.node.nodeType == 1) {
+            const node = uf.node;
+            if (node.nodeType == 1) {
+                const calculatedValue = uf.func.apply(adapt);
                 if (uf.dir == "bind") {
-                    const calculatedValue = uf.func.apply(adapt);
                     if (typeof calculatedValue != "object") {
-                        if (uf.node.getAttribute(uf.attribute) !== calculatedValue) {
-                            uf.node.setAttribute(uf.attribute, calculatedValue);
+                        if (node.getAttribute(uf.attribute) !== calculatedValue) {
+                            node.setAttribute(uf.attribute, calculatedValue);
                         }
                     } else if (uf.attribute == "class") {
-                        uf.node.setAttribute(uf.attribute, "");
+                        node.setAttribute(uf.attribute, "");
                         if (Array.isArray(calculatedValue)) {
-                            calculatedValue.forEach(e => { if (e) uf.node.classList.add(e); });
+                            calculatedValue.forEach(e => { if (e) node.classList.add(e); });
                         } else {
                             for (const key in calculatedValue) {
                                 if (calculatedValue[key]) {
-                                    uf.node.classList.add(key);
+                                    node.classList.add(key);
                                 }
                             }
                         }
                     }
                     if (uf.initClass) {
-                        uf.initClass.forEach(c => uf.node.classList.add(c));
+                        uf.initClass.forEach(c => node.classList.add(c));
                     }
                 } else if (uf.dir == "model") {
-                    const calculatedValue = uf.func.apply(adapt);
-                    if (uf.node.value !== calculatedValue) {
-                        uf.node.value = calculatedValue;
+                    if (node.tagName.toLowerCase() == "input" && node.type == "checkbox") {
+                        if (node.checked !== calculatedValue) {
+                            node.checked = calculatedValue;
+                        }
+                    } else if (node.tagName.toLowerCase() == "input" && node.type == "radio") {
+                        if (node.checked !== (node.value == calculatedValue)) {
+                            node.checked = node.value == calculatedValue;
+                        }
+                    } else {
+                        if (node.value !== calculatedValue) {
+                            node.value = calculatedValue;
+                        }
                     }
                 } else if (uf.dir == "text") {
-                    uf.node.innerText = uf.func.apply(adapt);
+                    node.innerText = calculatedValue;
                 } else if (uf.dir == "html") {
-                    uf.node.innerHTML = uf.func.apply(adapt);
+                    node.innerHTML = calculatedValue;
                 } else if (uf.dir == "visible") {
-                    uf.node.style["display"] = uf.func.apply(adapt) ? "" : "none";
+                    node.style["display"] = calculatedValue ? "" : "none";
                 } else if (uf.dir == "style") {
-                    uf.node.setAttribute("style", "");
-                    const calculatedValue = uf.func.apply(adapt);
+                    node.setAttribute("style", "");
                     for (const key in calculatedValue) {
-                        uf.node.style[key] = calculatedValue[key];
+                        node.style[key] = calculatedValue[key];
                     }
                     if (uf.initStyle) {
-                        uf.node.setAttribute("style", uf.initStyle + ";" + uf.node.getAttribute("style"));
+                        node.setAttribute("style", uf.initStyle + ";" + node.getAttribute("style"));
                     }
                 }
-            } else if (uf.node.nodeType == 3) {
+            } else if (node.nodeType == 3) {
                 let result = uf.expression;
                 Object.entries(uf.areas).forEach(e => {
                     result = result.split(e[0]).join(e[1].apply(adapt));
                 });
-                uf.node.textContent = result;
+                node.textContent = result;
             }
         });
     }
@@ -166,7 +188,13 @@
                             result.dir = "model";
                             const key = node.getAttribute(name).trim();
                             node.addEventListener("input", function (e) {
-                                adapt[key] = this.value;
+                                if (node.tagName.toLowerCase() == "input" && node.type == "checkbox") {
+                                    adapt[key] = this.checked
+                                } else if (node.tagName.toLowerCase() == "input" && node.type == "radio") {
+                                    adapt[key] = this.value
+                                } else {
+                                    adapt[key] = this.value;
+                                }
                             });
                             addFunc(name);
                         } else if (name == "b-text") {

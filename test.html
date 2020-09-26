@@ -96,30 +96,55 @@
         <input type="text" b-model="as" value="win">
         <div b-bind:title="as" style="color: red;" b-style="{'background-color':color}">wild</div>
         <span b-visible="is">mies</span>
+        <textarea name="fi" b-model="color" cols="30" rows="10"></textarea>
+        <select b-model="color">
+            <option >lightgreen</option>
+            <option value="yellowgreen">M</option>
+            <option value="purple">W</option>
+        </select>
+        <progress :value="20-as" max="20"></progress>
+        <input type="range" max="20" b-model="as">
+        <input type="button" b-model="color">
+        <input type="checkbox" id="ibu" b-model="is" >
+        <br>
+        {{calc}}
+        <input type="radio" id="safg" value="d" b-model="radio">
+        <input type="radio" id="bgsuk" value="e" b-model="radio" >
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
-        //document.querySelector("#testobject>input").addEventListener("change", console.log)
+        //document.querySelector("#ibu").addEventListener("change", console.log)
+        //document.querySelector("#ibu").addEventListener("input", console.log)
         let app = booon.adapt({
             el: "#testobject",
             data: {
                 is: false,
-                as: true,
+                as: 7,
                 arr: [3, 4],
                 f: "fin",
-                color:"pink"
+                color:"pink",
+                radio: "",
+                sel:"a"
             },
             watch: {
                 is: (a, b) => {
-                    console.log(this);
+                    //console.log(this);
                 },
                 as: function (a, b) {
-                    console.log(a, b);
+                    
+                }
+            },
+            validators:{
+                as: function (n) {
+                    if(typeof n=="string"){
+                        const num=parseFloat(n)
+                        return Number.isNaN(num)?0:num;
+                    }
                 }
             },
             methods: {
                 calc: function (k) {
-                    return new Date().toISOString() + k;
+                    return new Date().toISOString() + " "+this.color;
                 }
             }
         })

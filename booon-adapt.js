@@ -7,12 +7,6 @@
             if (!opts.options) { opts.options = {}; }
             this._options = Object.freeze(opts);
             ["methods", "watch", "el", "options"].forEach(name => Object.freeze(opts[name] || {}));
-            //recreateEl(this);
-            this._el = opts.el instanceof Element ? opts.el : document.querySelector(opts.el);
-            if (!this._el) {
-                throw new Error("no valid el");
-            }
-            this._queue = [];
             this._data = enrichData(this, opts.data || {}, opts.methods || {});
             let that = this;
             this._funcPrefix = (() => {
@@ -27,43 +21,24 @@
             })();
 
             setInterval(() => {
-                this._queue.forEach(f => f());
-                if (this._queue.length) {
-                    this._queue = [];
-                }
-
                 if (this._render) {
                     this._render = false;
                     applyDOMChanges(this);
                     //recreateEl(this);
                 }
-            }, 1000 / 15);
+            }, 1000 / 5 /*TODO 15*/);
 
             booon(function () {
+                that._el = opts.el instanceof Element ? opts.el : document.querySelector(opts.el);
+                if (!that._el || that._el == document.body || that._el == document.body.parentElement) {
+                    throw new Error("no valid el");
+                }
                 that._render = true;
                 scan(that);
             });
         }
-
-        _schedule(func) {
-            this._queue.push(func);
-        }
     }
 
-    class UpdateFunction {
-        /*node;
-        expression;
-        attribute;
-        dir;
-        func;
-        areas;*/
-    }
-    /*function recreateEl(adapt) {
-        adapt._el = booon(adapt._options.el);
-        if (adapt._el.length > 1) {
-            throw new Error("more than one root");
-        }
-    }*/
     function enrichData(adapt, data, methods) {
         Object.keys(data)
             .forEach(key => {
@@ -106,13 +81,29 @@
         adapt._render = true;
     }
 
-    function applyDOMChanges(adapt) {
+    function applyDOMChanges(adapt, changes) {
         adapt._updateFunctions.forEach(uf => {
             if (uf.node.nodeType == 1) {
                 if (uf.dir == "bind") {
                     const calculatedValue = uf.func.apply(adapt);
-                    if (uf.node.getAttribute(uf.attribute) !== calculatedValue) {
-                        uf.node.setAttribute(uf.attribute, calculatedValue);
+                    if (typeof calculatedValue != "object") {
+                        if (uf.node.getAttribute(uf.attribute) !== calculatedValue) {
+                            uf.node.setAttribute(uf.attribute, calculatedValue);
+                        }
+                    } else if (uf.attribute == "class") {
+                        uf.node.setAttribute(uf.attribute, "");
+                        if (Array.isArray(calculatedValue)) {
+                            calculatedValue.forEach(e => { if (e) uf.node.classList.add(e); });
+                        } else {
+                            for (const key in calculatedValue) {
+                                if (calculatedValue[key]) {
+                                    uf.node.classList.add(key);
+                                }
+                            }
+                        }
+                    }
+                    if (uf.initClass) {
+                        uf.initClass.forEach(c => uf.node.classList.add(c));
                     }
                 } else if (uf.dir == "model") {
                     const calculatedValue = uf.func.apply(adapt);
@@ -126,7 +117,14 @@
                 } else if (uf.dir == "visible") {
                     uf.node.style["display"] = uf.func.apply(adapt) ? "" : "none";
                 } else if (uf.dir == "style") {
-
+                    uf.node.setAttribute("style", "");
+                    const calculatedValue = uf.func.apply(adapt);
+                    for (const key in calculatedValue) {
+                        uf.node.style[key] = calculatedValue[key];
+                    }
+                    if (uf.initStyle) {
+                        uf.node.setAttribute("style", uf.initStyle + ";" + uf.node.getAttribute("style"));
+                    }
                 }
             } else if (uf.node.nodeType == 3) {
                 let result = uf.expression;
@@ -139,19 +137,20 @@
     }
 
     function scan(adapt) {
-        adapt._reactNodes = [];
+        let t1 = new Date().getTime();
+        const reactNodes = [];
         fillNodes(adapt._el);
         function fillNodes(node) {
             if (isReactNode(node)) {
-                adapt._reactNodes.push(node);
+                reactNodes.push(node);
             }
             node.childNodes.forEach(fillNodes);
         }
-        console.log(adapt._reactNodes);
+        //console.log(reactNodes);
 
-        adapt._updateFunctions = adapt._reactNodes
+        adapt._updateFunctions = reactNodes
             .map(node => {
-                const result = new UpdateFunction();
+                const result = {};
                 result.node = node;
                 if (node.nodeType == 1) {
                     const attrNames = node.getAttributeNames();
@@ -159,24 +158,38 @@
                         if (name.startsWith("b-bind:") || name.startsWith(":")) {
                             result.dir = "bind";
                             result.attribute = name.slice(name.indexOf(":") + 1);
-                            result.func = getFunction(adapt, node.getAttribute(name));
+                            if (result.attribute == "class") {
+                                result.initClass = Array.from(node.classList);
+                            }
+                            addFunc(name);
                         } else if (name == "b-model") {
                             result.dir = "model";
-                            result.func = getFunction(adapt, node.getAttribute(name));
+                            const key = node.getAttribute(name).trim();
                             node.addEventListener("input", function (e) {
-                                adapt[node.getAttribute(name).trim()] = this.value;
+                                adapt[key] = this.value;
                             });
+                            addFunc(name);
                         } else if (name == "b-text") {
                             result.dir = "text";
-                            result.func = getFunction(adapt, node.getAttribute(name));
+                            addFunc(name);
                         } else if (name == "b-html") {
                             result.dir = "html";
-                            result.func = getFunction(adapt, node.getAttribute(name));
+                            addFunc(name);
                         } else if (name == "b-visible") {
                             result.dir = "visible";
-                            result.func = getFunction(adapt, node.getAttribute(name));
+                            addFunc(name);
+                        } else if (name == "b-style") {
+                            result.dir = "style";
+                            if (node.getAttribute("style")) {
+                                result.initStyle = node.getAttribute("style");
+                            }
+                            addFunc(name);
                         }
                     });
+                    function addFunc(name) {
+                        result.func = getFunction(adapt, node.getAttribute(name));
+                        node.removeAttribute(name);
+                    }
                 } else {
                     result.expression = node.textContent;
                     result.areas = {};
@@ -195,6 +208,7 @@
             });
 
         console.log(adapt._updateFunctions);
+        console.log((new Date().getTime() - t1) + " ms");
 
         function isReactNode(node) {
             // element node

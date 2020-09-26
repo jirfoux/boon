@@ -9,6 +9,7 @@
     <script src="booon-ajax.js"></script>
     <script src="booon-nodebuilder.js"></script>
     <script src="booon-adapt.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <title>Tests</title>
 </head>
 
@@ -87,19 +88,17 @@
     <a href="http://www.google.de">alpha</a>
     <img src="https://www.google.de/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="d" />
     <div id="testobject">
-        <span b-bind:class="as">Karl</span>
+        <span class="pung" b-bind:class="{bongo:is}">Karl</span>
         siebe n {{f}} mal {{as}}
+        <br>
+        {{55+77}}
         <p b-html="as+' _ '+as"></p>
         <input type="text" b-model="as" value="win">
-        <div>wild</div>
+        <div b-bind:title="as" style="color: red;" b-style="{'background-color':color}">wild</div>
         <span b-visible="is">mies</span>
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
-        document.querySelector("#testobject>input").addEventListener("input", function (e) {
-            console.log(e);
-            console.log(this.value);
-        })
         //document.querySelector("#testobject>input").addEventListener("change", console.log)
         let app = booon.adapt({
             el: "#testobject",
@@ -107,7 +106,8 @@
                 is: false,
                 as: true,
                 arr: [3, 4],
-                f: "fin"
+                f: "fin",
+                color:"pink"
             },
             watch: {
                 is: (a, b) => {
@@ -121,6 +121,26 @@
                 calc: function (k) {
                     return new Date().toISOString() + k;
                 }
+            }
+        })
+    </script>
+    <div id="vue">
+        <input type="text" v-model="ram">
+        <p v-text="uncached()"></p>
+        <p v-text="cached"></p>
+    </div>
+    <script>
+        let abb = new Vue({
+            el: "#vue",
+            data: {
+                ram: "nun",
+                init: false
+            },
+            methods: {
+                uncached: function () { console.log("un"); this.ram; return new Date().toISOString() }
+            },
+            computed: {
+                cached: function () { console.log("ca"); if (this.init) this.ram; this.init = true; return new Date().toISOString() }
             }
         })
     </script>

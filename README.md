@@ -13,8 +13,6 @@
 
 ![](https://badgen.net/jsdelivr/hits/npm/booon)
 
-![](https://badgen.net/badge/Happy/Scrum/pink)
-
 ![](https://badgen.net/badge/Use/as/008e9b?scale=0.9)
 ![](https://badgen.net/badge/many/badges/2da7d3?scale=0.9)
 ![](https://badgen.net/badge/as/possible/00daee?scale=0.9)

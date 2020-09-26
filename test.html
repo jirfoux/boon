@@ -86,12 +86,11 @@
         booon(console.log, 9)
     </script>
     <a href="http://www.google.de">alpha</a>
-    <img src="https://www.google.de/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="d" />
     <div id="testobject">
         <span class="pung" b-bind:class="{bongo:is}">Karl</span>
         siebe n {{f}} mal {{as}}
         <br>
-        {{55+77}}
+        {{55+77  }}
         <p b-html="as+' _ '+as"></p>
         <input type="text" b-model="as" value="win">
         <div b-bind:title="as" style="color: red;" b-style="{'background-color':color}">wild</div>
@@ -108,8 +107,11 @@
         <input type="checkbox" id="ibu" b-model="is" >
         <br>
         {{calc}}
+        <br>
+        <button @click="as<10?as++:as--" b-on:mouseenter="console.log('dirf '+new Date())">Mir</button>
         <input type="radio" id="safg" value="d" b-model="radio">
         <input type="radio" id="bgsuk" value="e" b-model="radio" >
+        {{arr}}
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
@@ -122,7 +124,7 @@
                 as: 7,
                 arr: [3, 4],
                 f: "fin",
-                color:"pink",
+                color:"springgreen",
                 radio: "",
                 sel:"a"
             },
@@ -145,6 +147,9 @@
             methods: {
                 calc: function (k) {
                     return new Date().toISOString() + " "+this.color;
+                },
+                ev: function (event) {
+                    console.log(arguments);
                 }
             }
         })
@@ -155,11 +160,15 @@
         <p v-text="cached"></p>
     </div>
     <script>
+        function tt() {
+            return "frant";
+        }
         let abb = new Vue({
             el: "#vue",
             data: {
                 ram: "nun",
-                init: false
+                init: false,
+                er:44
             },
             methods: {
                 uncached: function () { console.log("un"); this.ram; return new Date().toISOString() }

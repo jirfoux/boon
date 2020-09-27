@@ -10,14 +10,17 @@
     "jquery",
     "no",
     "alternative",
-    "browser","nodebuilder"
+    "browser",
+    "nodebuilder",
+    "vue",
+    "xhr"
   ],
   "homepage": "https://github.com/Jelenkee/booon#readme",
   "scripts": {
-    "test": "tap -J -t 300 test/*.js",
+    "test": "tap -J -t 30 test/adapt/*.js",
     "lint": "node node_modules/eslint/bin/eslint.js .",
     "lintfix": "npm run lint -- --fix",
-    "minify":"npx terser booon.js -m -c -o dist/booon.min.js;npx terser booon-ajax.js -m -c -o dist/booon-ajax.min.js;npx terser booon-nodebuilder.js -m -c -o dist/booon-nodebuilder.min.js"
+    "minify": "npx terser booon.js -m -c -o dist/booon.min.js;npx terser booon-ajax.js -m -c -o dist/booon-ajax.min.js;npx terser booon-nodebuilder.js -m -c -o dist/booon-nodebuilder.min.js"
   },
   "repository": {
     "type": "git",
@@ -29,7 +32,6 @@
   "devDependencies": {
     "browserify": "^16.5.2",
     "eslint": "^7.9.0",
-    "jest": "^26.4.2",
     "jsdom": "^16.4.0",
     "mocha": "^8.1.3",
     "tap": "^14.10.8",

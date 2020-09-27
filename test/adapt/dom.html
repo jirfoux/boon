@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    {SCRIPTS}
+</head>
+
+<body>
+    <div id="main">
+        <div class="style">
+            <p class="ref" b-style="css"></p>
+            <p class="inline" b-style="{color:c,display:'flex'}"></p>
+            <p class="inline-static" style="background-color: aqua;" b-style="{display:'grid'}"></p>
+            <p class="visible1" b-visible="1==1"></p>
+            <p class="visible2" b-visible="1!=1"></p>
+            <p class="visible3" b-visible="c=='green'"></p>
+        </div>
+        <div class="bind">
+            <p class="string" b-bind:tank=" c"></p>
+            <p class="string-static" :tank="'z'  "></p>
+            <p class="wrong" :tank="{foo:'bar'}"></p>
+            <p class="c-object" :class="{foo:true,bar:false}"></p>
+            <p class="c-string" :class="'brad pitt '"></p>
+            <p class="c-array" :class="['blue',c]"></p>
+        </div>
+        <div class="model">
+            <input class="c1" type="checkbox" b-model="b1">
+            <input class="c2" type="checkbox" b-model="''">
+            <input class="r1" type="radio" value="r1" b-model="rad">
+            <input class="r2" type="radio" value="r2" b-model="rad">
+            <textarea class="ta" cols="30" rows="10" b-model="c"></textarea>
+            <input class="t1" type="text" value="" b-model="text">
+        </div>
+        <div class="text">
+            <p class="t" b-text="html"></p>
+            <p class="t2" b-text="44*2"></p>
+            <p class="h" b-html="html"></p>
+            <p class="temp1">{{html}} tooth</p>
+            <p class="temp2">{{1+1+1+1}} times</p>
+        </div>
+        <div class="event">
+            <p class="c1" @click="num++"></p>
+            <p class="c2" b-on:click="inc5  "></p>
+            <p class="c3" @click="inc5(9,$event)"></p>
+        </div>
+    </div>
+</body>
+
+</html>

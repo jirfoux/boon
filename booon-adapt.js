@@ -3,31 +3,40 @@
 (function () {
     class Adapt {
         constructor(opts) {
-            // el, data, watch, methods, options
+            // el, data, watch, methods, options, init
             if (!opts.options) { opts.options = {}; }
             this._options = Object.freeze(opts);
             ["methods", "watch", "el", "options", "validators"].forEach(name => Object.freeze(opts[name] || {}));
             this._data = enrichData(this, opts.data || {}, opts.methods || {});
             let that = this;
 
-            setInterval(() => {
+            /*setInterval(() => {
                 if (that._dirty) {
                     that._dirty = false;
                     applyDOMChanges(that);
                 }
-            }, 1000 / 5 /*TODO 15*/);
+            }, 1000 / 15);*/
 
             booon(function () {
                 that._el = opts.el instanceof Element ? opts.el : document.querySelector(opts.el);
                 if (!that._el || that._el == document.body || that._el == document.body.parentElement) {
                     throw new Error("no valid el");
                 }
-                that._dirty = true;
                 scanDOM(that);
+                setDirty(that);
                 if (opts.init) {
                     init.apply(that);
                 }
             });
+        }
+    }
+
+    function setDirty(adapt) {
+        if (!adapt._timeout) {
+            adapt._timeout = setTimeout(() => {
+                applyDOMChanges(adapt);
+                adapt._timeout = null;
+            }, 20);
         }
     }
 
@@ -39,7 +48,7 @@
                 }
                 const callback = () => {
                     callWatcher(adapt, key, data[key], data[key]);
-                    adapt._dirty = true;
+                    setDirty(adapt);
                 };
                 if (Array.isArray(data[key])) {
                     enrichArray(data[key], callback);
@@ -52,7 +61,7 @@
                         const validationResult = callValidator(adapt, key, x);
                         if (validationResult !== undefined) {
                             if (validationResult !== x) {
-                                adapt._dirty = true;
+                                setDirty(adapt);
                             }
                             x = validationResult;
                         }
@@ -64,7 +73,7 @@
                         data[key] = x;
                         if (old !== x) {
                             callWatcher(adapt, key, old, x);
-                            adapt._dirty = true;
+                            setDirty(adapt);
                         }
                     },
                     get: function () {
@@ -215,7 +224,7 @@
                         node.style[key] = calculatedValue[key];
                     }
                     if (uf.initStyle) {
-                        node.setAttribute("style", uf.initStyle + ";" + node.getAttribute("style"));
+                        node.setAttribute("style", uf.initStyle + node.getAttribute("style"));
                     }
                 }
             } else if (node.nodeType == 3) {
@@ -259,8 +268,6 @@
                             node.addEventListener("input", function (e) {
                                 if (node.tagName.toLowerCase() == "input" && node.type == "checkbox") {
                                     adapt[key] = this.checked;
-                                } else if (node.tagName.toLowerCase() == "input" && node.type == "radio") {
-                                    adapt[key] = this.value;
                                 } else {
                                     adapt[key] = this.value;
                                 }
@@ -279,6 +286,9 @@
                             result.dir = "style";
                             if (node.getAttribute("style")) {
                                 result.initStyle = node.getAttribute("style");
+                                if (!result.initStyle.endsWith(";")) {
+                                    result.initStyle += ";";
+                                }
                             }
                             addFunc(name);
                         } else if (name.startsWith("b-on:") || name.startsWith("@")) {
@@ -315,7 +325,7 @@
                 return result;
             });
 
-        /*function getModifiers(attr) {
+        function getModifiers(attr) {
             const res = [];
             let index;
             while ((index = attr.lastIndexOf(".")) !== -1) {
@@ -323,7 +333,7 @@
                 attr = attr.slice(0, index);
             }
             return res.reverse();
-        }*/
+        }
 
         //console.log(adapt._updateFunctions);
 
@@ -374,10 +384,11 @@
 
     function getFunction(adapt, expression, event) {
         expression = expression.trim();
+        const dataKeys = Object.keys(adapt._options.data || {})
         const funcPrefix = (() => {
             const pref = k => "let " + k + "=this." + k + ";";
             let res = "";
-            Object.keys(adapt._options.data || {}).forEach(k => {
+            dataKeys.forEach(k => {
                 if (expression.includes(k)) {
                     res += pref(k);
                 }
@@ -391,7 +402,7 @@
         })();
         const funcSuffix = (() => {
             let res = ";";
-            Object.keys(adapt._options.data || {}).forEach(k => {
+            dataKeys.forEach(k => {
                 if (expression.includes(k)) {
                     res += "if(" + k + "!==this." + k + ")this." + k + "=" + k + ";";
                 }
@@ -402,7 +413,7 @@
         if (event) {
             funcBody = "const $event=this._event;" + funcBody;
         }
-        const isFunc = Boolean(adapt._options.methods[expression]) ||
+        const isFunc = Boolean((adapt._options.methods || {})[expression]) ||
             (expression.endsWith(")") && !expression.startsWith("(") && (expression.match(/\)/g) || "").length == 1 && (expression.match(/\(/g) || "").length == 1);
         if (isFunc) {
             if (!expression.endsWith(")")) {

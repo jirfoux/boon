@@ -71,7 +71,6 @@ test("node", t => {
     newNode.innerHTML = "<h6 id=\"z\">king</h6>";
     builder = booon.nodeBuilder("pre")
         .node(newNode);
-    console.log(builder.buildString());
     booon("p").html(builder.buildString());
     t.equal(booon("p>pre>pre>h6")[0].id, "z");
     booon("p").html("");

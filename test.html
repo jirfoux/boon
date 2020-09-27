@@ -86,7 +86,7 @@
         booon(console.log, 9)
     </script>
     <a href="http://www.google.de">alpha</a>
-    <div id="testobject">
+    <div id="testobject" b-style="{'background-color':is?'thistle':'lightsteelblue'}">
         <span class="pung" b-bind:class="{bongo:is}">Karl</span>
         siebe n {{f}} mal {{as}}
         <br>
@@ -97,21 +97,23 @@
         <span b-visible="is">mies</span>
         <textarea name="fi" b-model="color" cols="30" rows="10"></textarea>
         <select b-model="color">
-            <option >lightgreen</option>
+            <option>lightgreen</option>
             <option value="yellowgreen">M</option>
             <option value="purple">W</option>
+            <option value="lightcoral">Kolo</option>
         </select>
         <progress :value="20-as" max="20"></progress>
         <input type="range" max="20" b-model="as">
         <input type="button" b-model="color">
-        <input type="checkbox" id="ibu" b-model="is" >
+        <input type="checkbox" id="ibu" b-model="is">
         <br>
         {{calc}}
         <br>
         <button @click="as<10?as++:as--" b-on:mouseenter="console.log('dirf '+new Date())">Mir</button>
         <input type="radio" id="safg" value="d" b-model="radio">
-        <input type="radio" id="bgsuk" value="e" b-model="radio" >
+        <input type="radio" id="bgsuk" value="e" b-model="radio">
         {{arr}}
+        <div id="green" b-text="obj"></div>
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
@@ -122,31 +124,35 @@
             data: {
                 is: false,
                 as: 7,
-                arr: [3, 4],
+                arr: [3, 4, { is: "ss" }],
                 f: "fin",
-                color:"springgreen",
+                color: "dodgerblue",
                 radio: "",
-                sel:"a"
+                sel: "a",
+                obj: {
+                    kino: "yes",
+                    fino: { val: "no" }
+                }
             },
             watch: {
                 is: (a, b) => {
                     //console.log(this);
                 },
                 as: function (a, b) {
-                    
+
                 }
             },
-            validators:{
+            validators: {
                 as: function (n) {
-                    if(typeof n=="string"){
-                        const num=parseFloat(n)
-                        return Number.isNaN(num)?0:num;
+                    if (typeof n == "string") {
+                        const num = parseFloat(n)
+                        return Number.isNaN(num) ? 0 : num;
                     }
                 }
             },
             methods: {
                 calc: function (k) {
-                    return new Date().toISOString() + " "+this.color;
+                    return new Date().toISOString() + " " + this.color;
                 },
                 ev: function (event) {
                     console.log(arguments);
@@ -158,6 +164,7 @@
         <input type="text" v-model="ram">
         <p v-text="uncached()"></p>
         <p v-text="cached"></p>
+        <p v-text="arr"></p>
     </div>
     <script>
         function tt() {
@@ -168,14 +175,19 @@
             data: {
                 ram: "nun",
                 init: false,
-                er:44
+                er: 44,
+                arr: [3, { test: 4 }]
             },
             methods: {
-                uncached: function () { console.log("un"); this.ram; return new Date().toISOString() }
+                uncached: function () { return this.ram; }
             },
             computed: {
-                cached: function () { console.log("ca"); if (this.init) this.ram; this.init = true; return new Date().toISOString() }
-            }
+                cached: function () { if (this.init) this.ram; this.init = true; return new Date().toISOString() }
+            },
+            /*watch:{
+                arr:console.log,
+                ram:console.log
+            }*/
         })
     </script>
     <style>

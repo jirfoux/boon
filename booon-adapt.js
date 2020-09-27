@@ -23,7 +23,7 @@
                     throw new Error("no valid el");
                 }
                 that._dirty = true;
-                scan(that);
+                scanDOM(that);
                 if (opts.init) {
                     init.apply(that);
                 }
@@ -37,6 +37,15 @@
                 if (key.startsWith("_")) {
                     throw new Error("no '_'-keys");
                 }
+                const callback = () => {
+                    callWatcher(adapt, key, data[key], data[key]);
+                    adapt._dirty = true;
+                };
+                if (Array.isArray(data[key])) {
+                    enrichArray(data[key], callback);
+                } else if (typeof data[key] == "object") {
+                    enrichObject(data[key], callback);
+                }
                 Object.defineProperty(adapt, key, {
                     set: function (x) {
                         const old = data[key];
@@ -46,6 +55,11 @@
                                 adapt._dirty = true;
                             }
                             x = validationResult;
+                        }
+                        if (Array.isArray(x)) {
+                            enrichArray(key, x, callback);
+                        } else if (typeof x == "object") {
+                            enrichObject(key, x, callback);
                         }
                         data[key] = x;
                         if (old !== x) {
@@ -71,6 +85,66 @@
             });
         return data;
     }
+
+    function enrichObject(object, callback) {
+        Object.keys(object)
+            .forEach(k => {
+                if (!object._data) {
+                    Object.defineProperty(object, "_data", { writable: true });
+                    object._data = {};
+                }
+                if (object._data.hasOwnProperty(k)) {
+                    return;
+                }
+                if (Array.isArray(object[k])) {
+                    enrichArray(object[k], callback);
+                } else if (typeof object[k] == "object") {
+                    enrichObject(object[k], callback);
+                }
+                object._data[k] = object[k];
+                Object.defineProperty(object, k, {
+                    set: function (x) {
+                        /*if (Array.isArray(x)) {
+                            enrichArray(key, x)
+                        } else if (typeof x == "object") {
+                            enrichObject(key, x)
+                        }*/
+                        object._data[k] = x;
+                        callback();
+                    },
+                    get: function () {
+                        return object._data[k];
+                    }
+                });
+            });
+    }
+
+    function enrichArray(array, callback) {
+        ["push", "pop", "shift", "unshift", "splice", "sort", "reverse"]
+            .forEach(method => {
+                const old = array[method];
+                if (old.custom) {
+                    return;
+                }
+                array[method] = (...args) => {
+                    old.apply(array, args);
+                    enrich();
+                    callback();
+                };
+                array[method].custom = true;
+            });
+        function enrich() {
+            array.forEach(e => {
+                if (Array.isArray(e)) {
+                    enrichArray(e, callback);
+                } else if (typeof e == "object") {
+                    enrichObject(e, callback);
+                }
+            });
+        }
+        enrich();
+    }
+
     function callWatcher(adapt, key, oldValue, newValue) {
         const opts = adapt._options;
         if (opts.watch) {
@@ -94,6 +168,7 @@
             const dir = uf.dir;
             if (node.nodeType == 1) {
                 const calculatedValue = uf.func.apply(adapt);
+                const calculatedString = toString(calculatedValue);
                 if (dir == "bind") {
                     if (typeof calculatedValue != "object") {
                         if (node.getAttribute(uf.attribute) !== calculatedValue) {
@@ -120,18 +195,18 @@
                             node.checked = calculatedValue;
                         }
                     } else if (node.tagName.toLowerCase() == "input" && node.type == "radio") {
-                        if (node.checked !== (node.value == calculatedValue)) {
-                            node.checked = node.value == calculatedValue;
+                        if (node.checked !== (node.value == calculatedString)) {
+                            node.checked = node.value == calculatedString;
                         }
                     } else {
-                        if (node.value !== calculatedValue) {
-                            node.value = calculatedValue;
+                        if (node.value !== calculatedString) {
+                            node.value = calculatedString;
                         }
                     }
                 } else if (dir == "text") {
-                    node.innerText = calculatedValue;
+                    node.innerText = calculatedString;
                 } else if (dir == "html") {
-                    node.innerHTML = calculatedValue;
+                    node.innerHTML = calculatedString;
                 } else if (dir == "visible") {
                     node.style["display"] = calculatedValue ? "" : "none";
                 } else if (dir == "style") {
@@ -146,15 +221,14 @@
             } else if (node.nodeType == 3) {
                 let result = uf.expression;
                 Object.entries(uf.areas).forEach(e => {
-                    result = result.split(e[0]).join(e[1].apply(adapt));
+                    result = result.split(e[0]).join(toString(e[1].apply(adapt)));
                 });
                 node.textContent = result;
             }
         });
     }
 
-    function scan(adapt) {
-        let t1 = new Date().getTime();
+    function scanDOM(adapt) {
         const reactNodes = [];
         fillNodes(adapt._el);
         function fillNodes(node) {
@@ -211,9 +285,6 @@
                             const event = name.slice(Math.max(name.indexOf(":"), name.indexOf("@")) + 1);
                             const func = getFunction(adapt, node.getAttribute(name), true);
                             node.addEventListener(event, function (e) {
-                                if(e&&modifiers.includes("prevent")){
-                                    e.preventDefault();
-                                }
                                 adapt._event = e;
                                 func.apply(adapt);
                                 delete adapt._event;
@@ -254,8 +325,7 @@
             return res.reverse();
         }*/
 
-        console.log(adapt._updateFunctions);
-        console.log((new Date().getTime() - t1) + " ms");
+        //console.log(adapt._updateFunctions);
 
         function isReactNode(node) {
             // element node
@@ -350,6 +420,10 @@
         }
         //console.log(funcBody);
         return new Function(funcBody);
+    }
+
+    function toString(val) {
+        return typeof val == "object" ? JSON.stringify(val) : String(val);
     }
 
     booon.adapt = function (options) {

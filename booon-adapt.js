@@ -7,25 +7,18 @@
             if (!opts.options) { opts.options = {}; }
             this._options = Object.freeze(opts);
             ["methods", "watch", "el", "options", "validators"].forEach(name => Object.freeze(opts[name] || {}));
+            this._changedAttrs = new Set();
             this._data = enrichData(this, opts.data || {}, opts.methods || {});
-            let that = this;
 
-            /*setInterval(() => {
-                if (that._dirty) {
-                    that._dirty = false;
-                    applyDOMChanges(that);
-                }
-            }, 1000 / 15);*/
-
-            booon(function () {
-                that._el = opts.el instanceof Element ? opts.el : document.querySelector(opts.el);
-                if (!that._el || that._el == document.body || that._el == document.body.parentElement) {
+            booon(() => {
+                this._el = opts.el instanceof Element ? opts.el : document.querySelector(opts.el);
+                if (!this._el || this._el == document.body || this._el == document.body.parentElement) {
                     throw new Error("no valid el");
                 }
-                scanDOM(that);
-                setDirty(that);
+                scanDOM(this);
+                setDirty(this);
                 if (opts.init) {
-                    init.apply(that);
+                    init.apply(this);
                 }
             });
         }
@@ -41,57 +34,81 @@
     }
 
     function enrichData(adapt, data, methods) {
-        Object.keys(data)
-            .forEach(key => {
-                if (key.startsWith("_")) {
-                    throw new Error("no '_'-keys");
-                }
-                const callback = () => {
-                    callWatcher(adapt, key, data[key], data[key]);
-                    setDirty(adapt);
-                };
-                if (Array.isArray(data[key])) {
-                    enrichArray(data[key], callback);
-                } else if (typeof data[key] == "object") {
-                    enrichObject(data[key], callback);
-                }
+        adapt._usedAttributes = {};
+        let collect;
+        //Object.seal(data);
+        Object.keys(data).forEach(key => {
+            if (key.startsWith("_")) {
+                throw new Error("no '_'-keys");
+            }
+            const value = data[key];
+            adapt._cachedData = {};
+            if (typeof value == "function") {
+                adapt._usedAttributes[key] = null;
                 Object.defineProperty(adapt, key, {
-                    set: function (x) {
-                        const old = data[key];
-                        const validationResult = callValidator(adapt, key, x);
-                        if (validationResult !== undefined) {
-                            if (validationResult !== x) {
-                                setDirty(adapt);
-                            }
-                            x = validationResult;
-                        }
-                        if (Array.isArray(x)) {
-                            enrichArray(key, x, callback);
-                        } else if (typeof x == "object") {
-                            enrichObject(key, x, callback);
-                        }
-                        data[key] = x;
-                        if (old !== x) {
-                            callWatcher(adapt, key, old, x);
+                    get: function () {
+                        return adapt._cachedData[key];
+                    }
+                });
+                return;
+            }
+            const callback = () => {
+                callWatcher(adapt, key, value, value);
+                setDirty(adapt);
+            };
+            if (Array.isArray(value)) {
+                enrichArray(value, callback);
+            } else if (typeof value == "object") {
+                enrichObject(value, callback);
+            }
+            Object.defineProperty(adapt, key, {
+                set: function (x) {
+                    const old = data[key];
+                    const validationResult = callValidator(adapt, key, x);
+                    if (validationResult !== undefined) {
+                        if (validationResult !== x) {
                             setDirty(adapt);
                         }
-                    },
-                    get: function () {
-                        return data[key];
+                        x = validationResult;
                     }
-                });
-            });
-        Object.keys(methods)
-            .forEach(key => {
-                if (key.startsWith("_")) {
-                    throw new Error("no '_'-keys");
+                    if (Array.isArray(x)) {
+                        enrichArray(key, x, callback);
+                    } else if (typeof x == "object") {
+                        enrichObject(key, x, callback);
+                    }
+                    data[key] = x;
+                    if (old !== x) {
+                        callWatcher(adapt, key, old, x);
+                        setDirty(adapt);
+                    }
+                },
+                get: function () {
+                    if (collect) {
+                        collect.add(key);
+                    }
+                    return data[key];
                 }
-                Object.defineProperty(adapt, key, {
-                    get: function () {
-                        return methods[key];
-                    }
-                });
             });
+        });
+        Object.keys(methods).forEach(key => {
+            if (key.startsWith("_")) {
+                throw new Error("no '_'-keys");
+            }
+            Object.defineProperty(adapt, key, {
+                get: function () {
+                    return methods[key];
+                }
+            });
+        });
+        Object.keys(adapt._usedAttributes).forEach(key => {
+            collect = new Set();
+            data[key].apply(adapt);
+            adapt._usedAttributes[key] = Array.from(collect);
+            collect.forEach(e => adapt._changedAttrs.add(e));
+        });
+        collect = null;
+        Object.freeze(adapt._usedAttributes);
+
         return data;
     }
 
@@ -156,22 +173,31 @@
 
     function callWatcher(adapt, key, oldValue, newValue) {
         const opts = adapt._options;
-        if (opts.watch) {
-            if (opts.watch[key]) {
-                opts.watch[key].apply(adapt, [oldValue, newValue]);
+        const watch = opts.watch;
+        if (watch) {
+            if (watch[key]) {
+                watch[key].apply(adapt, [newValue, oldValue]);
             }
         }
+        adapt._changedAttrs.add(key);
     }
     function callValidator(adapt, key, newValue) {
         const opts = adapt._options;
-        if (opts.validators) {
-            if (opts.validators[key]) {
-                return opts.validators[key].apply(adapt, [newValue]);
+        const validators = opts.validators;
+        if (validators) {
+            if (validators[key]) {
+                return validators[key].apply(adapt, [newValue]);
             }
         }
     }
 
     function applyDOMChanges(adapt) {
+        Object.entries(adapt._usedAttributes).forEach(e => {
+            if (e[1].some(a => adapt._changedAttrs.has(a))) {
+                adapt._cachedData[e[0]] = adapt._data[e[0]].apply(adapt);
+            }
+        });
+        adapt._changedAttrs.clear();
         adapt._updateFunctions.forEach(uf => {
             const node = uf.node;
             const dir = uf.dir;
@@ -384,7 +410,7 @@
 
     function getFunction(adapt, expression, event) {
         expression = expression.trim();
-        const dataKeys = Object.keys(adapt._options.data || {})
+        const dataKeys = Object.keys(adapt._options.data || {});
         const funcPrefix = (() => {
             const pref = k => "let " + k + "=this." + k + ";";
             let res = "";

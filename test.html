@@ -114,6 +114,7 @@
         <input type="radio" id="bgsuk" value="e" b-model="radio">
         {{arr}}
         <div id="green" b-text="obj"></div>
+        <p>{{ruf+12}}</p>
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
@@ -132,11 +133,14 @@
                 obj: {
                     kino: "yes",
                     fino: { val: "no" }
+                },
+                ruf: function () {
+                    return this.as + 1000;
                 }
             },
             watch: {
-                is: (a, b) => {
-                    //console.log(this);
+                is: function (a, b) {
+                    this.ruf = 3
                 },
                 as: function (a, b) {
 

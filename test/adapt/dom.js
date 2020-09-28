@@ -31,7 +31,7 @@ module.exports.getAdapt = (b) => b.adapt({
             if (typeof a == "number")
                 this.num += a;
             else
-                this.num += 5
+                this.num += 5;
             if (e) {
                 this.ee = e;
             }

@@ -1,24 +1,28 @@
 "use strict";
 //@ts-check
 (function () {
+    const O = Object;
+    O.k = O.keys;
+    const A = Array;
     class Adapt {
         constructor(opts) {
             // el, data, watch, methods, options, init
             if (!opts.options) { opts.options = {}; }
-            this._options = Object.freeze(opts);
-            ["methods", "watch", "el", "options", "validators"].forEach(name => Object.freeze(opts[name] || {}));
-            this._changedAttrs = new Set();
-            this._data = enrichData(this, opts.data || {}, opts.methods || {});
+            const that = this;
+            that._options = O.freeze(opts);
+            ["methods", "watch", "el", "options", "validators"].forEach(name => O.freeze(opts[name] || {}));
+            that._changedAttrs = new Set();
+            that._data = enrichData(that, opts.data || {}, opts.methods || {});
 
             booon(() => {
-                this._el = opts.el instanceof Element ? opts.el : document.querySelector(opts.el);
-                if (!this._el || this._el == document.body || this._el == document.body.parentElement) {
+                that._el = opts.el instanceof Element ? opts.el : document.querySelector(opts.el);
+                if (!that._el || that._el == document.body || that._el == document.body.parentElement) {
                     throw new Error("no valid el");
                 }
-                scanDOM(this);
-                setDirty(this);
+                scanDOM(that);
+                setDirty(that);
                 if (opts.init) {
-                    init.apply(this);
+                    init.apply(that);
                 }
             });
         }
@@ -36,8 +40,8 @@
     function enrichData(adapt, data, methods) {
         adapt._usedAttributes = {};
         let collect;
-        //Object.seal(data);
-        Object.keys(data).forEach(key => {
+        //O.seal(data);
+        O.k(data).forEach(key => {
             if (key.startsWith("_")) {
                 throw new Error("no '_'-keys");
             }
@@ -45,7 +49,7 @@
             adapt._cachedData = {};
             if (typeof value == "function") {
                 adapt._usedAttributes[key] = null;
-                Object.defineProperty(adapt, key, {
+                O.defineProperty(adapt, key, {
                     get: function () {
                         return adapt._cachedData[key];
                     }
@@ -56,12 +60,12 @@
                 callWatcher(adapt, key, value, value);
                 setDirty(adapt);
             };
-            if (Array.isArray(value)) {
+            if (A.isArray(value)) {
                 enrichArray(value, callback);
             } else if (typeof value == "object") {
                 enrichObject(value, callback);
             }
-            Object.defineProperty(adapt, key, {
+            O.defineProperty(adapt, key, {
                 set: function (x) {
                     const old = data[key];
                     const validationResult = callValidator(adapt, key, x);
@@ -71,7 +75,7 @@
                         }
                         x = validationResult;
                     }
-                    if (Array.isArray(x)) {
+                    if (A.isArray(x)) {
                         enrichArray(key, x, callback);
                     } else if (typeof x == "object") {
                         enrichObject(key, x, callback);
@@ -90,59 +94,58 @@
                 }
             });
         });
-        Object.keys(methods).forEach(key => {
+        O.k(methods).forEach(key => {
             if (key.startsWith("_")) {
                 throw new Error("no '_'-keys");
             }
-            Object.defineProperty(adapt, key, {
+            O.defineProperty(adapt, key, {
                 get: function () {
                     return methods[key];
                 }
             });
         });
-        Object.keys(adapt._usedAttributes).forEach(key => {
+        O.k(adapt._usedAttributes).forEach(key => {
             collect = new Set();
             data[key].apply(adapt);
-            adapt._usedAttributes[key] = Array.from(collect);
+            adapt._usedAttributes[key] = A.from(collect);
             collect.forEach(e => adapt._changedAttrs.add(e));
         });
         collect = null;
-        Object.freeze(adapt._usedAttributes);
+        O.freeze(adapt._usedAttributes);
 
         return data;
     }
 
     function enrichObject(object, callback) {
-        Object.keys(object)
-            .forEach(k => {
-                if (!object._data) {
-                    Object.defineProperty(object, "_data", { writable: true });
-                    object._data = {};
+        O.k(object).forEach(k => {
+            if (!O._data) {
+                O.defineProperty(object, "_data", { writable: true });
+                O._data = {};
+            }
+            if (O._data.hasOwnProperty(k)) {
+                return;
+            }
+            if (A.isArray(object[k])) {
+                enrichArray(object[k], callback);
+            } else if (typeof object[k] == "object") {
+                enrichObject(object[k], callback);
+            }
+            O._data[k] = object[k];
+            O.defineProperty(object, k, {
+                set: function (x) {
+                    /*if (A.isArray(x)) {
+                        enrichArray(key, x)
+                    } else if (typeof x == "object") {
+                        enrichObject(key, x)
+                    }*/
+                    O._data[k] = x;
+                    callback();
+                },
+                get: function () {
+                    return O._data[k];
                 }
-                if (object._data.hasOwnProperty(k)) {
-                    return;
-                }
-                if (Array.isArray(object[k])) {
-                    enrichArray(object[k], callback);
-                } else if (typeof object[k] == "object") {
-                    enrichObject(object[k], callback);
-                }
-                object._data[k] = object[k];
-                Object.defineProperty(object, k, {
-                    set: function (x) {
-                        /*if (Array.isArray(x)) {
-                            enrichArray(key, x)
-                        } else if (typeof x == "object") {
-                            enrichObject(key, x)
-                        }*/
-                        object._data[k] = x;
-                        callback();
-                    },
-                    get: function () {
-                        return object._data[k];
-                    }
-                });
             });
+        });
     }
 
     function enrichArray(array, callback) {
@@ -161,7 +164,7 @@
             });
         function enrich() {
             array.forEach(e => {
-                if (Array.isArray(e)) {
+                if (A.isArray(e)) {
                     enrichArray(e, callback);
                 } else if (typeof e == "object") {
                     enrichObject(e, callback);
@@ -192,7 +195,7 @@
     }
 
     function applyDOMChanges(adapt) {
-        Object.entries(adapt._usedAttributes).forEach(e => {
+        O.entries(adapt._usedAttributes).forEach(e => {
             if (e[1].some(a => adapt._changedAttrs.has(a))) {
                 adapt._cachedData[e[0]] = adapt._data[e[0]].apply(adapt);
             }
@@ -201,17 +204,18 @@
         adapt._updateFunctions.forEach(uf => {
             const node = uf.node;
             const dir = uf.dir;
+            const attribute=uf.attribute;
             if (node.nodeType == 1) {
                 const calculatedValue = uf.func.apply(adapt);
                 const calculatedString = toString(calculatedValue);
                 if (dir == "bind") {
                     if (typeof calculatedValue != "object") {
-                        if (node.getAttribute(uf.attribute) !== calculatedValue) {
-                            node.setAttribute(uf.attribute, calculatedValue);
+                        if (node.getAttribute(attribute) !== calculatedValue) {
+                            node.setAttribute(attribute, calculatedValue);
                         }
-                    } else if (uf.attribute == "class") {
-                        node.setAttribute(uf.attribute, "");
-                        if (Array.isArray(calculatedValue)) {
+                    } else if (attribute == "class") {
+                        node.setAttribute(attribute, "");
+                        if (A.isArray(calculatedValue)) {
                             calculatedValue.forEach(e => { if (e) node.classList.add(e); });
                         } else {
                             for (const key in calculatedValue) {
@@ -220,9 +224,9 @@
                                 }
                             }
                         }
-                    }
-                    if (uf.initClass) {
-                        uf.initClass.forEach(c => node.classList.add(c));
+                        if (uf.initClass) {
+                            uf.initClass.forEach(c => node.classList.add(c));
+                        }
                     }
                 } else if (dir == "model") {
                     if (node.tagName.toLowerCase() == "input" && node.type == "checkbox") {
@@ -255,7 +259,7 @@
                 }
             } else if (node.nodeType == 3) {
                 let result = uf.expression;
-                Object.entries(uf.areas).forEach(e => {
+                O.entries(uf.areas).forEach(e => {
                     result = result.split(e[0]).join(toString(e[1].apply(adapt)));
                 });
                 node.textContent = result;
@@ -285,7 +289,7 @@
                             result.dir = "bind";
                             result.attribute = name.slice(name.indexOf(":") + 1);
                             if (result.attribute == "class") {
-                                result.initClass = Array.from(node.classList);
+                                result.initClass = A.from(node.classList);
                             }
                             addFunc(name);
                         } else if (name == "b-model") {
@@ -310,8 +314,9 @@
                             addFunc(name);
                         } else if (name == "b-style") {
                             result.dir = "style";
-                            if (node.getAttribute("style")) {
-                                result.initStyle = node.getAttribute("style");
+                            const style = node.getAttribute("style")
+                            if (style) {
+                                result.initStyle = style;
                                 if (!result.initStyle.endsWith(";")) {
                                     result.initStyle += ";";
                                 }
@@ -365,7 +370,7 @@
 
         function isReactNode(node) {
             // element node
-            if ((node.nodeType == 1 && node != document.body)) {
+            if ((node.nodeType == 1)) {
                 const attrNames = node.getAttributeNames();
                 for (const name of attrNames) {
                     if (dirs.includes(name) && node.getAttribute(name)) {
@@ -408,42 +413,38 @@
         return indices;
     }
 
-    function getFunction(adapt, expression, event) {
+    function getFunction(adapt, expression, isEvent) {
         expression = expression.trim();
-        const dataKeys = Object.keys(adapt._options.data || {});
-        const funcPrefix = (() => {
-            const pref = k => "let " + k + "=this." + k + ";";
-            let res = "";
-            dataKeys.forEach(k => {
-                if (expression.includes(k)) {
-                    res += pref(k);
-                }
-            });
-            Object.keys(adapt._options.methods || {}).forEach(k => {
-                if (expression.includes(k)) {
-                    res += pref(k);
-                }
-            });
-            return res;
-        })();
-        const funcSuffix = (() => {
-            let res = ";";
-            dataKeys.forEach(k => {
-                if (expression.includes(k)) {
-                    res += "if(" + k + "!==this." + k + ")this." + k + "=" + k + ";";
-                }
-            });
-            return res;
-        })();
-        let funcBody = funcPrefix + (event ? "" : "return ");
-        if (event) {
+        const dataKeys = O.k(adapt._options.data || {});
+
+        const pref = k => "let " + k + "=this." + k + ";";
+        let funcPrefix = "";
+        dataKeys.forEach(k => {
+            if (expression.includes(k)) {
+                funcPrefix += pref(k);
+            }
+        });
+        O.k(adapt._options.methods || {}).forEach(k => {
+            if (expression.includes(k)) {
+                funcPrefix += pref(k);
+            }
+        });
+
+        let funcSuffix = ";";
+        dataKeys.forEach(k => {
+            if (expression.includes(k)) {
+                funcSuffix += "if(" + k + "!==this." + k + ")this." + k + "=" + k + ";";
+            }
+        });
+        let funcBody = funcPrefix + (isEvent ? "" : "return ");
+        if (isEvent) {
             funcBody = "const $event=this._event;" + funcBody;
         }
         const isFunc = Boolean((adapt._options.methods || {})[expression]) ||
             (expression.endsWith(")") && !expression.startsWith("(") && (expression.match(/\)/g) || "").length == 1 && (expression.match(/\(/g) || "").length == 1);
         if (isFunc) {
             if (!expression.endsWith(")")) {
-                funcBody += expression + ".apply(this" + (event ? ",[$event]" : "") + ")";
+                funcBody += expression + ".apply(this" + (isEvent ? ",[$event]" : "") + ")";
             } else {
                 const paraIndex = expression.indexOf("(");
                 const funcName = expression.slice(0, paraIndex);
@@ -452,7 +453,7 @@
         } else {
             funcBody += expression;
         }
-        if (event) {
+        if (isEvent) {
             funcBody += funcSuffix;
         }
         //console.log(funcBody);

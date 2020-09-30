@@ -85,8 +85,13 @@
         });
         booon(console.log, 9)
     </script>
+    <style>
+        .hide {
+            display: none;
+        }
+    </style>
     <a href="http://www.google.de">alpha</a>
-    <div id="testobject" b-style="{'background-color':is?'thistle':'lightsteelblue'}">
+    <div id="testobject" class="hide" b-style="{'background-color':is?'thistle':'lightsteelblue'}">
         <span class="pung" b-bind:class="{bongo:is}">Karl</span>
         siebe n {{f}} mal {{as}}
         <br>
@@ -118,60 +123,64 @@
         <svg :width="as*3*7" height="100" viewbox="0 0 300 200">
             <desc>Flagge Norwegens</desc>
             <rect x="0" y="0" width="300" height="200" fill="#ef2b2d" />
-            <path 
-              d="m85,-5 h30 v90 h190 v30h-190 v90 h-30 v-90 h-90 v-30 h90z" 
-              fill="#002868" 
-              stroke="white" stroke-width="10" 
-            />
-          </svg>
+            <path d="m85,-5 h30 v90 h190 v30h-190 v90 h-30 v-90 h-90 v-30 h90z" fill="#002868" stroke="white"
+                stroke-width="10" />
+        </svg>
+        <p>{{obj.arr}}</p>
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
         //document.querySelector("#ibu").addEventListener("change", console.log)
         //document.querySelector("#ibu").addEventListener("input", console.log)
-        let app = booon.adapt({
-            el: "#testobject",
-            data: {
-                is: false,
-                as: 7,
-                arr: [3, 4, { is: "ss" }],
-                f: "fin",
-                color: "dodgerblue",
-                radio: "",
-                sel: "a",
-                obj: {
-                    kino: "yes",
-                    fino: { val: "no" }
-                },
-                ruf: function () {
-                    return this.as + 1000;
-                }
-            },
-            watch: {
-                is: function (a, b) {
-                    this.ruf = 3
-                },
-                as: function (a, b) {
-
-                }
-            },
-            validators: {
-                as: function (n) {
-                    if (typeof n == "string") {
-                        const num = parseFloat(n)
-                        return Number.isNaN(num) ? 0 : num;
+        let app;
+        setTimeout(() => {
+            app = booon.adapt({
+                el: "#testobject",
+                data: {
+                    is: false,
+                    as: 7,
+                    arr: [3, 4, { is: "ss" }],
+                    f: "fin",
+                    color: "dodgerblue",
+                    radio: "",
+                    sel: "a",
+                    obj: {
+                        kino: "yes",
+                        fino: { val: "no" }
+                    },
+                    ruf: function () {
+                        return this.as + 1000;
                     }
-                }
-            },
-            methods: {
-                calc: function (k) {
-                    return new Date().toISOString() + " " + this.color;
                 },
-                ev: function (event) {
-                    console.log(arguments);
+                watch: {
+                    is: function (a, b) {
+                        this.ruf = 3
+                    },
+                    as: function (a, b) {
+
+                    }
+                },
+                validators: {
+                    as: function (n) {
+                        if (typeof n == "string") {
+                            const num = parseFloat(n)
+                            return Number.isNaN(num) ? 0 : num;
+                        }
+                    }
+                },
+                methods: {
+                    calc: function (k) {
+                        return new Date().toISOString() + " " + this.color;
+                    },
+                    ev: function (event) {
+                        console.log(arguments);
+                    }
+                },
+                init: function () {
+                    booon(this._el).removeClass("hide");
                 }
-            }
-        })
+            })
+        }, 200);
     </script>
     <div id="vue">
         <input type="text" v-model="ram">

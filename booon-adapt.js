@@ -1,16 +1,13 @@
 "use strict";
 //@ts-check
 (function () {
-    const { isArray } = Array;
-    const { keys, defineProperty } = Object;
-
     class Adapt {
         constructor(opts) {
             // el, data, watch, methods, options, init
             if (!opts.options) { opts.options = {}; }
             const that = this;
             that._options = Object.freeze(opts);
-            ["methods", "watch", "el", "options", "validators"].forEach(name => Object.freeze(opts[name] || {}));
+            ["methods", "watch", "el", "options", "validate"].forEach(name => Object.freeze(opts[name] || {}));
             that._changedAttrs = new Set();
             that._data = enrichData(that, opts.data || {}, opts.methods || {});
 
@@ -22,7 +19,7 @@
                 scanDOM(that);
                 setDirty(that);
                 if (opts.init) {
-                    init.apply(that);
+                    opts.init.apply(that);
                 }
             };
             if (document.readyState == "complete") {
@@ -45,16 +42,18 @@
     function enrichData(adapt, data, methods) {
         adapt._usedAttributes = {};
         let collect;
-        Object.seal(data);
-        keys(data).forEach(key => {
+        const validataPropertyName = (key) => {
             if (key.startsWith("_")) {
                 throw new Error("no '_'-keys");
             }
+        }
+        Object.keys(data).forEach(key => {
+            validataPropertyName(key);
             const value = data[key];
             adapt._cachedData = {};
             if (typeof value == "function") {
                 adapt._usedAttributes[key] = null;
-                defineProperty(adapt, key, {
+                Object.defineProperty(adapt, key, {
                     get: function () {
                         return adapt._cachedData[key];
                     }
@@ -65,12 +64,12 @@
                 callWatcher(adapt, key, value, value);
                 setDirty(adapt);
             };
-            if (isArray(value)) {
+            if (Array.isArray(value)) {
                 enrichArray(value, callback);
             } else if (typeof value == "object") {
                 enrichObject(value, callback);
             }
-            defineProperty(adapt, key, {
+            Object.defineProperty(adapt, key, {
                 set: function (x) {
                     const old = data[key];
                     const validationResult = callValidator(adapt, key, x);
@@ -80,10 +79,10 @@
                         }
                         x = validationResult;
                     }
-                    if (isArray(x)) {
-                        enrichArray(key, x, callback);
+                    if (Array.isArray(x)) {
+                        enrichArray(x, callback);
                     } else if (typeof x == "object") {
-                        enrichObject(key, x, callback);
+                        enrichObject(x, callback);
                     }
                     data[key] = x;
                     if (old !== x) {
@@ -99,17 +98,15 @@
                 }
             });
         });
-        keys(methods).forEach(key => {
-            if (key.startsWith("_")) {
-                throw new Error("no '_'-keys");
-            }
-            defineProperty(adapt, key, {
+        Object.keys(methods).forEach(key => {
+            validataPropertyName(key);
+            Object.defineProperty(adapt, key, {
                 get: function () {
                     return methods[key];
                 }
             });
         });
-        keys(adapt._usedAttributes).forEach(key => {
+        Object.keys(adapt._usedAttributes).forEach(key => {
             collect = new Set();
             data[key].apply(adapt);
             adapt._usedAttributes[key] = Array.from(collect);
@@ -122,27 +119,27 @@
     }
 
     function enrichObject(object, callback) {
-        keys(object).forEach(k => {
+        Object.keys(object).forEach(k => {
             if (!object._data) {
-                defineProperty(object, "_data", { writable: true });
+                Object.defineProperty(object, "_data", { writable: true });
                 object._data = {};
             }
             if (object._data.hasOwnProperty(k)) {
                 return;
             }
-            if (isArray(object[k])) {
+            if (Array.isArray(object[k])) {
                 enrichArray(object[k], callback);
             } else if (typeof object[k] == "object") {
                 enrichObject(object[k], callback);
             }
             object._data[k] = object[k];
-            defineProperty(object, k, {
+            Object.defineProperty(object, k, {
                 set: function (x) {
-                    /*if (isArray(x)) {
-                        enrichArray(key, x)
+                    if (Array.isArray(x)) {
+                        enrichArray(x, callback)
                     } else if (typeof x == "object") {
-                        enrichObject(key, x)
-                    }*/
+                        enrichObject(x, callback)
+                    }
                     object._data[k] = x;
                     callback();
                 },
@@ -154,29 +151,33 @@
     }
 
     function enrichArray(array, callback) {
-        ["push", "pop", "shift", "unshift", "splice", "sort", "reverse"]
-            .forEach(method => {
-                const old = array[method];
-                if (old.custom) {
-                    return;
-                }
-                array[method] = (...args) => {
-                    old.apply(array, args);
-                    enrich();
-                    callback();
-                };
-                array[method].custom = true;
-            });
-        function enrich() {
+        if (!array.custo) {
+            ["push", "pop", "shift", "unshift", "splice", "sort", "reverse"]
+                .forEach(method => {
+                    function neww(...args) {
+                        Array.prototype[method].apply(array, args);
+                        enrichElements();
+                        callback();
+                    };
+                    Object.defineProperty(array, method, {
+                        enumerable: false,
+                        configurable: false,
+                        writable: false,
+                        value: neww
+                    });
+                });
+            array.custo = true
+        }
+        function enrichElements() {
             array.forEach(e => {
-                if (isArray(e)) {
+                if (Array.isArray(e)) {
                     enrichArray(e, callback);
                 } else if (typeof e == "object") {
                     enrichObject(e, callback);
                 }
             });
         }
-        enrich();
+        enrichElements();
     }
 
     function callWatcher(adapt, key, oldValue, newValue) {
@@ -191,10 +192,10 @@
     }
     function callValidator(adapt, key, newValue) {
         const opts = adapt._options;
-        const validators = opts.validators;
-        if (validators) {
-            if (validators[key]) {
-                return validators[key].apply(adapt, [newValue]);
+        const validate = opts.validate;
+        if (validate) {
+            if (validate[key]) {
+                return validate[key].apply(adapt, [newValue]);
             }
         }
     }
@@ -215,12 +216,12 @@
                 const calculatedString = toString(calculatedValue);
                 if (dir == "bind") {
                     if (typeof calculatedValue != "object") {
-                        if (node.getAttribute(attribute) !== calculatedValue) {
-                            node.setAttribute(attribute, calculatedValue);
+                        if (node.getAttribute(attribute) !== calculatedString) {
+                            node.setAttribute(attribute, calculatedString);
                         }
                     } else if (attribute == "class") {
                         node.setAttribute(attribute, "");
-                        if (isArray(calculatedValue)) {
+                        if (Array.isArray(calculatedValue)) {
                             calculatedValue.forEach(e => { if (e) node.classList.add(e); });
                         } else {
                             for (const key in calculatedValue) {
@@ -281,7 +282,6 @@
             }
             node.childNodes.forEach(fillNodes);
         }
-        //console.log(reactNodes);
 
         adapt._updateFunctions = reactNodes
             .map(node => {
@@ -371,8 +371,6 @@
             return res.reverse();
         }
 
-        //console.log(adapt._updateFunctions);
-
         function isReactNode(node) {
             // element node
             if ((node.nodeType == 1)) {
@@ -420,23 +418,23 @@
 
     function getFunction(adapt, expression, isEvent) {
         expression = expression.trim();
-        const dataKeys = keys(adapt._options.data || {});
+        const datakeys = Object.keys(adapt._options.data || {});
 
         const pref = k => "let " + k + "=this." + k + ";";
         let funcPrefix = "";
-        dataKeys.forEach(k => {
+        datakeys.forEach(k => {
             if (expression.includes(k)) {
                 funcPrefix += pref(k);
             }
         });
-        keys(adapt._options.methods || {}).forEach(k => {
+        Object.keys(adapt._options.methods || {}).forEach(k => {
             if (expression.includes(k)) {
                 funcPrefix += pref(k);
             }
         });
 
         let funcSuffix = ";";
-        dataKeys.forEach(k => {
+        datakeys.forEach(k => {
             if (expression.includes(k)) {
                 funcSuffix += "if(" + k + "!==this." + k + ")this." + k + "=" + k + ";";
             }
@@ -461,7 +459,6 @@
         if (isEvent) {
             funcBody += funcSuffix;
         }
-        //console.log(funcBody);
         return new Function(funcBody);
     }
 

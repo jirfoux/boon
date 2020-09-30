@@ -47,14 +47,14 @@ window.booon = (function () {
         }
         children() {
             return booon(distinct(this.es
-                .flatMap(element => Array.from(element.childNodes))));
+                .flatMap(element => Array.from(element.children))));
         }
         siblings(inclusive) {
             if (inclusive) {
                 return booon(distinct(this.es
                     .map(element => element.parentElement)
                     .filter(element => element)
-                    .flatMap(element => Array.from(element.childNodes))));
+                    .flatMap(element => Array.from(element.children))));
             } else {
                 function s(elem) {
                     var siblings = [];

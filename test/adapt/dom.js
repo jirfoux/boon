@@ -24,7 +24,19 @@ module.exports.getAdapt = (b) => b.adapt({
         texts: ["alpha", "beta", "gamma", "delta"],
         text: "pingu",
         html: "<b>simba</b>",
-        num: 0
+        num: 0,
+        w1: 9,
+        w2: 0,
+        full: function () {
+            return this.c + this.num;
+        },
+        count: 0,
+        oo: {
+            arr: ["_", ","],
+            k: {
+                dir: "zoo"
+            }
+        }
     },
     methods: {
         inc5: function (a, e) {
@@ -35,6 +47,18 @@ module.exports.getAdapt = (b) => b.adapt({
             if (e) {
                 this.ee = e;
             }
+        }
+    },
+    watch: {
+        w1: function (n, o) {
+            this.w2 = n + n;
+            this.num = o;
+        },
+        texts: function () {
+            this.count++;
+        },
+        oo: function () {
+            this.count++;
         }
     }
 });

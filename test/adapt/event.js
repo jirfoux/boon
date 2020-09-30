@@ -10,13 +10,13 @@ test("event", t => {
     t.plan(2);
     setTimeout(() => {
         const c1Node = booon("#main>.event>.c1")[0];
-        submitEvent(c1Node,"click");
+        submitEvent(c1Node, "click");
         const c2Node = booon("#main>.event>.c2")[0];
-        submitEvent(c2Node,"click");
+        submitEvent(c2Node, "click");
         const c3Node = booon("#main>.event>.c3")[0];
-        submitEvent(c3Node,"click");
+        submitEvent(c3Node, "click");
         setTimeout(() => {
-            t.equal(adapt.num,15);
+            t.equal(adapt.num, 15);
             t.ok(adapt.ee);
         }, 300);
     }, 300);

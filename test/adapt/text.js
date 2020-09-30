@@ -7,7 +7,7 @@ const booon = getBooon(dom);
 const adapt = getAdapt(booon);
 
 test("text", t => {
-    t.plan(5);
+    t.plan(6);
     setTimeout(() => {
         const tNode = booon("#main>.text>.t")[0];
         t.equal(tNode.innerText, adapt.html);
@@ -19,5 +19,17 @@ test("text", t => {
         t.equal(temp1Node.textContent, adapt.html + " tooth");
         const temp2Node = booon("#main>.text>.temp2")[0];
         t.equal(temp2Node.textContent, "4 times");
+        booon.adapt({
+            el: "#main2",
+            data: { "t": "T" },
+            options: {
+                startTag: "[[",
+                endTag: "%%%"
+            }
+        })
+        setTimeout(() => {
+            const tagNode = booon("#main2>.tag")[0];
+            t.equal(tagNode.textContent, "T");
+        }, 300);
     }, 300);
 });

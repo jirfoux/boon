@@ -27,7 +27,7 @@ Probably _not_ compatible with ![](https://upload.wikimedia.org/wikipedia/common
 | booon | - |
 |booon-ajax|-|
 |booon-nodebuilder|booon|
-|booon-adapt|booon|
+|booon-adapt|-|
 
 ## booon ⛰️
 

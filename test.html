@@ -93,11 +93,7 @@
     </style>
     <a href="http://www.google.de">alpha</a>
     <div id="testobject" class="hide" b-style="{'background-color':is?'thistle':'lightsteelblue'}">
-        <select >
-            <option value="">ee</option>
-            <option value="">rr</option>
-        </select>
-        <span id="cool" b-html="'<h1>'+as+'</h1>'"></span>
+        <!-- <span id="cool" b-html="'<h1>'+as+'</h1>'"></span> -->
         <div>
         </div>
         <span class="pung" b-bind:class="{bongo:is}">Karl</span>
@@ -105,16 +101,16 @@
         <br>
         {{55+77  }}
         <p b-html="as+' _ '+as"></p>
-        <input type="text" b-model="as" value="win">
+        <input type="text" b-model.lazy="as" value="win">
         <div b-bind:title="as" style="color: red;" b-style="{'background-color':color}">wild</div>
         <span b-visible="is">mies</span>
         <textarea name="fi" b-model="color" cols="30" rows="10"></textarea>
-        <!-- <select b-model="color">
+        <select b-model="color">
             <option>lightgreen</option>
             <option value="yellowgreen">M</option>
             <option value="purple">W</option>
             <option value="lightcoral">Kolo</option>
-        </select> -->
+        </select>
         <progress :value="20-as" max="20"></progress>
         <input type="range" max="20" b-model="as">
                
@@ -123,7 +119,7 @@
         <br>
         {{calc}}
         <br>
-        <button @click="as<10?as++:as--" b-on:mouseenter=";">Mir</button>
+        <button @click="as<10?as++:as--" b-on:mouseenter.once="console.log('lama');">Mir</button>
         <input type="radio" id="safg" value="d" b-model="radio">
         <input type="radio" id="bgsuk" value="e" b-model="radio">
         {{arr}}
@@ -166,7 +162,7 @@
                         this.ruf = 3
                     },
                     as: function (a, b) {
-                        console.log(a,b);
+                        //console.log(a,b);
                     }
                 },
                 validators: {

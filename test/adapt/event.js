@@ -15,8 +15,11 @@ test("event", t => {
         submitEvent(c2Node, "click");
         const c3Node = booon("#main>.event>.c3")[0];
         submitEvent(c3Node, "click");
+        const c4Node = booon("#main>.event>.c4")[0];
+        submitEvent(c4Node, "click");
+        submitEvent(c4Node, "click");
         setTimeout(() => {
-            t.equal(adapt.num, 15);
+            t.equal(adapt.num, 16);
             t.ok(adapt.ee);
         }, 300);
     }, 300);

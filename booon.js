@@ -102,11 +102,16 @@ window.booon = (function () {
             return this.each(element => element.addEventListener(type, listener, capture));
         }
         once(type, listener, capture) {
-            const wrapped = e => {
-                this.each(element => element.removeEventListener(type, wrapped, capture));
-                listener(e);
-            };
-            return this.each(element => element.addEventListener(type, wrapped, capture));
+            let options;
+            if (typeof capture == "object") {
+                options = capture;
+                options.once = true;
+            } else if (typeof capture == "boolean") {
+                options = { capture: capture, once: true };
+            } else {
+                options = { once: true };
+            }
+            this.on(type, listener, options);
         }
         click(listener) {
             return this.on("click", listener);

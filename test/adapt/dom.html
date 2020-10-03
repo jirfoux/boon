@@ -33,6 +33,7 @@
             <input class="r2" type="radio" value="r2" b-model="rad">
             <textarea class="ta" cols="30" rows="10" b-model="c"></textarea>
             <input class="t1" type="text" value="" b-model="text">
+            <input class="t2" type="text" value="" b-model.lazy="text">
         </div>
         <div class="text">
             <p class="t" b-text="html"></p>
@@ -45,6 +46,7 @@
             <p class="c1" @click="num++"></p>
             <p class="c2" b-on:click="inc5  "></p>
             <p class="c3" @click="inc5(9,$event)"></p>
+            <p class="c4" @click.once="inc5(1)"></p>
         </div>
         <div class="react">
             <p class="watch"></p>

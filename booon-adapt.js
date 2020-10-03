@@ -328,11 +328,12 @@
                                 result.initClass = Array.from(node.classList);
                             }
                             addFunc(name);
-                        } else if (name == "b-model") {
+                        } else if (name == "b-model" || name.startsWith("b-model.")) {
                             result.dir = "model";
                             const key = node.getAttribute(name).trim();
                             const tagName = node.tagName.toLowerCase();
-                            node.addEventListener("input", function (e) {
+                            const modifiers = getModifiers(name);
+                            node.addEventListener(modifiers.includes("lazy") ? "change" : "input", function () {
                                 if (tagName == "input" && node.type == "checkbox") {
                                     adapt[key] = this.checked;
                                 } else {
@@ -360,13 +361,22 @@
                             }
                             addFunc(name);
                         } else if (name.startsWith("b-on:") || name.startsWith("@")) {
-                            const event = name.slice(Math.max(name.indexOf(":"), name.indexOf("@")) + 1);
+                            let event = name.slice(Math.max(name.indexOf(":"), name.indexOf("@")) + 1);
+                            const index = event.indexOf(".");
+                            if (index >= 0) {
+                                event = event.slice(0, index);
+                            }
                             const func = getFunction(adapt, node.getAttribute(name), true);
+                            const modifiers = getModifiers(name);
+                            const options = {
+                                once: modifiers.includes("once"),
+                                capture: modifiers.includes("capture")
+                            };
                             node.addEventListener(event, function (e) {
                                 adapt._event = e;
                                 func.apply(adapt);
                                 delete adapt._event;
-                            });
+                            }, options);
                             node.removeAttribute(name);
                             result.func = () => { };
                         }
@@ -433,8 +443,8 @@
             }
         }
     }
-    const dirs = ["b-model", "b-text", "b-html", "b-visible", "b-style"];
-    const dirsStarts = ["b-on:", "@", "b-bind:", ":"];
+    const dirs = ["b-text", "b-html", "b-visible", "b-style"];
+    const dirsStarts = ["b-on:", "@", "b-bind:", ":", "b-model"];
     function getIndicesOf(searchStr, str) {
         const searchStrLen = searchStr.length;
         if (searchStrLen == 0) {

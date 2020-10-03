@@ -1,6 +1,7 @@
 "use strict";
 //@ts-check
 (function () {
+    // ALIAS //
     class Adapt {
         constructor(opts) {
             // el, data, watch, methods, options, init

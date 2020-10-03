@@ -3,13 +3,16 @@
     if (!window.booon) {
         window.booon = {};
     }
+
     booon.ajax = function (settings, success, error) {
-        let xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (this.readyState == 4) {
                 let result;
                 try {
-                    result = settings.responseConverter ? settings.responseConverter(this.response) : this.response;
+                    result = settings.responseConverter
+                        ? settings.responseConverter(this.response)
+                        : this.response;
                 } catch (e) {
                     return err(e);
                 }
@@ -45,13 +48,14 @@
             };
         }
         let url = settings.url || "";
-        let u = document.createElement("a");
+        const u = document.createElement("a");
         u.href = url;
-        if (typeof settings.params == "object") {
+        if (typeof settings.params === "object") {
             url += (u.search ? "&" : "?") + serialize(settings.params);
         }
         xhr.open(settings.method || "get", url, true);
-        xhr.timeout = typeof settings.timeout == "number" ? settings.timeout : 0;
+        xhr.timeout =
+            typeof settings.timeout === "number" ? settings.timeout : 0;
         if (settings.pre) {
             try {
                 settings.pre(xhr);
@@ -62,18 +66,29 @@
         if (settings.accept) {
             xhr.setRequestHeader("Accept", settings.accept);
         }
-        for (let [key, value] of Object.entries(settings.headers || {})) {
+        for (const [key, value] of Object.entries(settings.headers || {})) {
             xhr.setRequestHeader(key, value);
         }
         let toSend = null;
         if (typeof settings.data === "string") {
             xhr.setRequestHeader("Content-Type", "text/plain");
             toSend = settings.data;
-        } else if (settings.data && ["URLSearchParams", "FormData"].includes(settings.data.constructor.name)) {
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        } else if (
+            settings.data &&
+            ["URLSearchParams", "FormData"].includes(
+                settings.data.constructor.name
+            )
+        ) {
+            xhr.setRequestHeader(
+                "Content-Type",
+                "application/x-www-form-urlencoded"
+            );
             toSend = settings.data;
         } else if (typeof settings.data === "object") {
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.setRequestHeader(
+                "Content-Type",
+                "application/x-www-form-urlencoded"
+            );
             toSend = serialize(settings.data);
         }
         xhr.send(toSend);
@@ -87,7 +102,7 @@
         Object.keys(obj).forEach(function (k) {
             const element = obj[k];
             if (Array.isArray(element)) {
-                element.forEach(e => data.push(enc(k) + "=" + enc(e)));
+                element.forEach((e) => data.push(enc(k) + "=" + enc(e)));
             } else {
                 data.push(enc(k) + "=" + enc(element));
             }
@@ -105,7 +120,7 @@
     booon.json = (settings, success, error) => {
         if (settings.responseConverter) {
             const old = settings.responseConverter;
-            settings.responseConverter = data => old(JSON.parse(data));
+            settings.responseConverter = (data) => old(JSON.parse(data));
         } else {
             settings.responseConverter = JSON.parse;
         }

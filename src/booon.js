@@ -3,6 +3,7 @@ window.booon = (function () {
     if (window.booon) {
         throw new Error("window.booon is already defined.");
     }
+    // ALIAS //
     class Booon {
         constructor(elements) {
             if (!Array.isArray(elements))

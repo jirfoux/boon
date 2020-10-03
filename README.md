@@ -17,21 +17,23 @@
 ![](https://badgen.net/badge/many/badges/2da7d3?scale=0.9)
 ![](https://badgen.net/badge/as/possible/00daee?scale=0.9)
 
-It is similiar to JQuery, but worse.
-I do not recommend using this library. If you are looking for an alternative to JQuery, click [here](https://www.educba.com/jquery-alternatives/).
+---
+
+A collection of libraries.
+I do not recommend using one of them (especially not in production).
 
 Probably _not_ compatible with ![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Internet_Explorer_10%2B11_logo.svg/20px-Internet_Explorer_10%2B11_logo.svg.png).
 
-| Library | Requires |
-| --- | --- |
-| booon | - |
-|booon-ajax|-|
-|booon-nodebuilder|booon|
-|booon-adapt|-|
+| Library | Requires | 'Better' alternatives|
+| --- | --- | --- |
+| booon | - | [jQuery](https://jquery.com/)|
+|booon-ajax|-|[jQuery](https://jquery.com/), [Axios](https://github.com/axios/axios)|
+|booon-nodebuilder|-|-|
+|booon-adapt|-|[Vue](https://vuejs.org/)|
 
 ## booon ⛰️
 
-TODO
+It is similiar to JQuery, but worse. If you are looking for an alternative to JQuery, click [here](https://www.educba.com/jquery-alternatives/).
 
 ## booon-ajax 📨
 
@@ -73,3 +75,5 @@ These methods are just semantic sugar:
     * `id(value)`
     * `node(value)`
     * `html(value)`
+
+## booon-adapt ⛓️

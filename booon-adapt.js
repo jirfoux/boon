@@ -7,13 +7,40 @@
             if (!opts.options) { opts.options = {}; }
             const that = this;
             that._options = Object.freeze(opts);
-            ["methods", "watch", "el", "options", "validate"].forEach(name => Object.freeze(opts[name] || {}));
+            ["methods", "watch", "options", "validate"].forEach(name => Object.freeze(opts[name] || {}));
             that._changedAttrs = new Set();
             that._data = enrichData(that, opts.data || {}, opts.methods || {});
 
             const load = () => {
-                that._el = opts.el instanceof Element ? opts.el : document.querySelector(opts.el);
-                if (!that._el || that._el == document.body || that._el == document.body.parentElement) {
+                if (opts.el instanceof Element) {
+                    that._el = [opts.el];
+                } else if (opts.el instanceof NodeList) {
+                    that._el = Array.from(opts.el);
+                } else if (Array.isArray(opts.el) && opts.el.every(e => e instanceof Element)) {
+                    that._el = Array.from(opts.el);
+                } else if (typeof opts.el == "string") {
+                    that._el = Array.from(document.querySelectorAll(opts.el));
+                }
+                let invalid = false;
+                if (!that._el ||
+                    that._el.length == 0 ||
+                    that._el.some(e => e == document.body || e == document.body.parentElement)) {
+                    invalid = true;
+                }
+                if (!invalid) {
+                    const parents = new Set();
+                    for (const e of that._el) {
+                        let parent = e.parentNode;
+                        while (parent) {
+                            parents.add(parent);
+                            parent = parent.parentNode;
+                        }
+                    }
+                    if (that._el.some(e => parents.has(e))) {
+                        invalid = true;
+                    }
+                }
+                if (invalid) {
                     throw new Error("no valid el");
                 }
                 scanDOM(that);
@@ -46,7 +73,7 @@
             if (key.startsWith("_")) {
                 throw new Error("no '_'-keys");
             }
-        }
+        };
         Object.keys(data).forEach(key => {
             validataPropertyName(key);
             const value = data[key];
@@ -136,9 +163,9 @@
             Object.defineProperty(object, k, {
                 set: function (x) {
                     if (Array.isArray(x)) {
-                        enrichArray(x, callback)
+                        enrichArray(x, callback);
                     } else if (typeof x == "object") {
-                        enrichObject(x, callback)
+                        enrichObject(x, callback);
                     }
                     object._data[k] = x;
                     callback();
@@ -158,7 +185,7 @@
                         Array.prototype[method].apply(array, args);
                         enrichElements();
                         callback();
-                    };
+                    }
                     Object.defineProperty(array, method, {
                         enumerable: false,
                         configurable: false,
@@ -166,7 +193,7 @@
                         value: neww
                     });
                 });
-            array.custo = true
+            array.custo = true;
         }
         function enrichElements() {
             array.forEach(e => {
@@ -249,9 +276,13 @@
                         }
                     }
                 } else if (dir == "text") {
-                    node.innerText = calculatedString;
+                    if (node.innerText !== calculatedString) {
+                        node.innerText = calculatedString;
+                    }
                 } else if (dir == "html") {
-                    node.innerHTML = calculatedString;
+                    if (node.innerHTML !== calculatedString) {
+                        node.innerHTML = calculatedString;
+                    }
                 } else if (dir == "visible") {
                     node.style["display"] = calculatedValue ? "" : "none";
                 } else if (dir == "style") {
@@ -275,7 +306,7 @@
 
     function scanDOM(adapt) {
         const reactNodes = [];
-        fillNodes(adapt._el);
+        adapt._el.forEach(fillNodes);
         function fillNodes(node) {
             if (isReactNode(node)) {
                 reactNodes.push(node);
@@ -283,7 +314,7 @@
             node.childNodes.forEach(fillNodes);
         }
 
-        adapt._updateFunctions = reactNodes
+        adapt._updateFunctions = reactNodes//.filter((val, i, self) => self.indexOf(val) === i)
             .map(node => {
                 const result = {};
                 result.node = node;
@@ -300,8 +331,9 @@
                         } else if (name == "b-model") {
                             result.dir = "model";
                             const key = node.getAttribute(name).trim();
+                            const tagName = node.tagName.toLowerCase();
                             node.addEventListener("input", function (e) {
-                                if (node.tagName.toLowerCase() == "input" && node.type == "checkbox") {
+                                if (tagName == "input" && node.type == "checkbox") {
                                     adapt[key] = this.checked;
                                 } else {
                                     adapt[key] = this.value;
@@ -319,7 +351,7 @@
                             addFunc(name);
                         } else if (name == "b-style") {
                             result.dir = "style";
-                            const style = node.getAttribute("style")
+                            const style = node.getAttribute("style");
                             if (style) {
                                 result.initStyle = style;
                                 if (!result.initStyle.endsWith(";")) {
@@ -466,6 +498,9 @@
         return typeof val == "object" ? JSON.stringify(val) : val + "";
     }
 
+    if (!window.booon) {
+        window.booon = {};
+    }
     booon.adapt = function (options) {
         return new Adapt(options);
     };

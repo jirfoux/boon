@@ -22,6 +22,7 @@
         Rest
     </h2>
     <input type="checkbox" name="e" id="e">
+   
     <div style="display: none;">
 
         <header>
@@ -92,6 +93,13 @@
     </style>
     <a href="http://www.google.de">alpha</a>
     <div id="testobject" class="hide" b-style="{'background-color':is?'thistle':'lightsteelblue'}">
+        <select >
+            <option value="">ee</option>
+            <option value="">rr</option>
+        </select>
+        <span id="cool" b-html="'<h1>'+as+'</h1>'"></span>
+        <div>
+        </div>
         <span class="pung" b-bind:class="{bongo:is}">Karl</span>
         siebe n {{f}} mal {{as}}
         <br>
@@ -101,20 +109,21 @@
         <div b-bind:title="as" style="color: red;" b-style="{'background-color':color}">wild</div>
         <span b-visible="is">mies</span>
         <textarea name="fi" b-model="color" cols="30" rows="10"></textarea>
-        <select b-model="color">
+        <!-- <select b-model="color">
             <option>lightgreen</option>
             <option value="yellowgreen">M</option>
             <option value="purple">W</option>
             <option value="lightcoral">Kolo</option>
-        </select>
+        </select> -->
         <progress :value="20-as" max="20"></progress>
         <input type="range" max="20" b-model="as">
+               
         <input type="button" b-model="color">
         <input type="checkbox" id="ibu" b-model="is">
         <br>
         {{calc}}
         <br>
-        <button @click="as<10?as++:as--" b-on:mouseenter="console.log('dirf '+new Date())">Mir</button>
+        <button @click="as<10?as++:as--" b-on:mouseenter=";">Mir</button>
         <input type="radio" id="safg" value="d" b-model="radio">
         <input type="radio" id="bgsuk" value="e" b-model="radio">
         {{arr}}
@@ -135,7 +144,7 @@
         let app;
         setTimeout(() => {
             app = booon.adapt({
-                el: "#testobject",
+                el: document.querySelectorAll(" #testobject, #wand , #cool2"),
                 data: {
                     is: false,
                     as: 7,
@@ -157,15 +166,15 @@
                         this.ruf = 3
                     },
                     as: function (a, b) {
-
+                        console.log(a,b);
                     }
                 },
                 validators: {
                     as: function (n) {
-                        if (typeof n == "string") {
+                        /*if (typeof n == "string") {
                             const num = parseFloat(n)
                             return Number.isNaN(num) ? 0 : num;
-                        }
+                        }*/
                     }
                 },
                 methods: {
@@ -221,6 +230,7 @@
             background-color: palegreen;
         }
     </style>
+    <div id="wand" ><h1 b-text="color">MIA</h1></div>
 
 </body>
 

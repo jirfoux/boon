@@ -21,12 +21,12 @@ test("text", t => {
         t.equal(temp2Node.textContent, "4 times");
         booon.adapt({
             el: "#main2",
-            data: { "t": "T" },
+            data: { "t": "T", "html": "" },
             options: {
                 startTag: "[[",
                 endTag: "%%%"
             }
-        })
+        });
         setTimeout(() => {
             const tagNode = booon("#main2>.tag")[0];
             t.equal(tagNode.textContent, "T");

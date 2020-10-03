@@ -84,13 +84,16 @@
                 });
             }
             if (parent) {
-                let p = booon(parent)[0];
+                let p = parent instanceof Element ? parent : document.querySelector(parent);
                 if (p) {
                     p.appendChild(result);
                 }
             }
             return result;
         }
+    }
+    if (!window.booon) {
+        window.booon = {};
     }
     booon.nodeBuilder = function (tag) {
         return new NodeBuilder(tag);

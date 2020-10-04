@@ -47,7 +47,8 @@ module.exports.getAdapt = (b) => b.adapt({
             if (e) {
                 this.ee = e;
             }
-        }
+        },
+        cDate: () => new Date().toISOString()
     },
     watch: {
         w1: function (n, o) {

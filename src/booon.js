@@ -114,8 +114,8 @@ window.booon = (function () {
             }
             this.on(type, listener, options);
         }
-        click(listener) {
-            return this.on("click", listener);
+        click(listener, options) {
+            return this.on("click", listener, options);
         }
         hover(enterListener, leaveListener, capture) {
             if (enterListener) {

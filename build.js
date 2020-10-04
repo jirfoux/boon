@@ -32,7 +32,7 @@ const ALIAS = "// ALIAS //";
 function prettify(text) {
     const stand = standard.lintTextSync(text, {
         fix: true
-    })
+    });
     return prettier.format(stand.results[0].output, {
         trailingComma: "none",
         parser: "babel",
@@ -70,9 +70,10 @@ function uglify(text) {
         }
         if (string(text).count(".startsWith(") > 2) {
             text = string(text).replaceAll(".startsWith(", ".sw(").s;
-            alias += "String.prototype.sw=String.prototype.startsWith;"
+            alias += "String.prototype.sw=String.prototype.startsWith;";
         }
         text = text.replace(ALIAS, alias);
+        text = string(text).replaceAll("Boolean(", "!!(").s;
 
     }
     //return new Promise((res) => res({ code: text }));

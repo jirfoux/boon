@@ -18,7 +18,7 @@
   "homepage": "https://github.com/Jelenkee/booon#readme",
   "scripts": {
     "test": "npm run build && tap -J -t 30 test/*.js test/adapt/*.js",
-    "lint": "node node_modules/eslint/bin/eslint.js . src/",
+    "lint": "node node_modules/eslint/bin/eslint.js .",
     "lintfix": "npm run lint -- --fix",
     "build": "node build.js"
   },

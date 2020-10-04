@@ -4,7 +4,7 @@
     // ALIAS //
     class Adapt {
         constructor(opts) {
-            // el, data, watch, methods, options, init
+            // el, data, watch, methods, options, init, validate
             if (!opts.options) { opts.options = {}; }
             const that = this;
             that._options = Object.freeze(opts);
@@ -75,10 +75,10 @@
                 throw new Error("no '_'-keys");
             }
         };
+        adapt._cachedData = {};
         Object.keys(data).forEach(key => {
             validataPropertyName(key);
             const value = data[key];
-            adapt._cachedData = {};
             if (typeof value == "function") {
                 adapt._usedAttributes[key] = null;
                 Object.defineProperty(adapt, key, {

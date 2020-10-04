@@ -58,14 +58,14 @@ test("headers", t => {
     const booon = getBooon();
     booon.json({
         url: "http://httpbin.org/get",
-        accept: "coward",
+        pre: xhr => xhr.setRequestHeader("Accept", "coward"),
         success: data => {
             t.equal(data.headers["Accept"], "coward");
         }
     });
     booon.json({
         url: "http://httpbin.org/get",
-        accept: "coward",
+        pre: xhr => xhr.setRequestHeader("Accept", "coward"),
         headers: { "Accept": "code" },
         success: data => {
             t.equal(data.headers["Accept"], "coward, code");
@@ -174,4 +174,3 @@ test("converter", t => {
         success: d => t.deepEqual(d, {})
     });
 });
-

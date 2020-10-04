@@ -22,7 +22,7 @@
         Rest
     </h2>
     <input type="checkbox" name="e" id="e">
-   
+
     <script>
         const o = { alter: "verwalter", r: [111, 11, 1], neu: { viel: 9, q: "Moooh", elf: ["ja", "yes", "si"] } }
         booon(() => {
@@ -60,7 +60,7 @@
         </select>
         <progress :value="20-as" max="20"></progress>
         <input type="range" max="20" b-model="as">
-               
+
         <input type="button" b-model="color">
         <input type="checkbox" id="ibu" b-model="is">
         <br>
@@ -78,7 +78,8 @@
             <path d="m85,-5 h30 v90 h190 v30h-190 v90 h-30 v-90 h-90 v-30 h90z" fill="#002868" stroke="white"
                 stroke-width="10" />
         </svg>
-        <p>{{obj.arr}}</p>
+        <p>{{String(ruf).length}}</p>
+        <p>{{ruf2}}</p>
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
@@ -99,11 +100,15 @@
                     obj: {
                         kino: "yes",
                         fino: { val: "no" },
-                        arr: ["kom","soz"]
+                        arr: ["kom", "soz"]
                     },
                     ruf: function () {
                         return this.as + 1000;
-                    }
+                    },
+                    ruf2: function () {
+                        return this.as + 100;
+                    },
+                    n: 19
                 },
                 watch: {
                     is: function (a, b) {
@@ -113,12 +118,17 @@
                         //console.log(a,b);
                     }
                 },
-                validators: {
+                validate: {
                     as: function (n) {
                         /*if (typeof n == "string") {
                             const num = parseFloat(n)
                             return Number.isNaN(num) ? 0 : num;
                         }*/
+                    },
+                    n: function (value) {
+                        // increase to number that is divisible by 10
+                        while (value % 10 !== 0) value++;
+                        return value
                     }
                 },
                 methods: {
@@ -174,7 +184,9 @@
             background-color: palegreen;
         }
     </style>
-    <div id="wand" ><h1 b-text="color">MIA</h1></div>
+    <div id="wand">
+        <h1 b-text="color">MIA</h1>
+    </div>
 
 </body>
 

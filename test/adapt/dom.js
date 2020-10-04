@@ -36,6 +36,10 @@ module.exports.getAdapt = (b) => b.adapt({
             k: {
                 dir: "zoo"
             }
+        },
+        co: {
+            f: 1,
+            b: 0
         }
     },
     methods: {

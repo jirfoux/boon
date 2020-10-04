@@ -3,7 +3,7 @@ const test = tap.test;
 const { getDom, getBooon, getAdapt } = require("./dom");
 
 const booon = getBooon(getDom());
-getAdapt(booon);
+const adapt = getAdapt(booon);
 test("bind", t => {
     t.plan(5);
     setTimeout(() => {
@@ -22,7 +22,7 @@ test("bind", t => {
 });
 
 test("class", t => {
-    t.plan(8);
+    t.plan(10);
     setTimeout(() => {
         const coNode = booon("#main>.bind>.c-object")[0];
         t.ok(coNode.classList.contains("foo"));
@@ -35,5 +35,8 @@ test("class", t => {
         t.ok(caNode.classList.contains("c-array"));
         t.ok(caNode.classList.contains("blue"));
         t.ok(caNode.classList.contains("green"));
+        const coNode2 = booon("#main>.bind>.c-object2")[0];
+        t.ok(coNode2.classList.contains("f"));
+        t.notOk(coNode2.classList.contains("b"));
     }, 300);
 });

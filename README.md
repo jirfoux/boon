@@ -1,5 +1,5 @@
 # booon
-###### build on our own network
+###### **b**uilt **o**n **o**ur **o**wn **n**etwork
 
 ### [github](https://github.com/Jelenkee/booon)
 ![](https://badgen.net/github/watchers/Jelenkee/booon)
@@ -13,10 +13,6 @@
 ![](https://badgen.net/npm/license/booon)
 
 ![](https://badgen.net/jsdelivr/hits/npm/booon)
-
-![](https://badgen.net/badge/Use/as/008e9b?scale=0.9)
-![](https://badgen.net/badge/many/badges/2da7d3?scale=0.9)
-![](https://badgen.net/badge/as/possible/00daee?scale=0.9)
 
 ---
 
@@ -282,42 +278,278 @@ booon("p").length // 0
 ## booon-ajax 📨
 
 #### `booon.ajax(settings[,success[,error]]);`
+Performs an AJAX request.
 
-#### settings:
-* `url` :string - self-explaining
-* `success(response,xhr)` :function - function that is called after successful request and takes response as argument
-* `error(response|error,xhr)` :function - function that is called after failed request
-* `fail(response|error,xhr)` :function - alias for `error`
-* `method` :string - http request method (get, post, ...)
-* `pre(xhr)` :function - function that is called before sending
-* `post(xhr)` :function - function that is called after request is finished
-* `timeout` :number - number for timeout in milliseconds
-* `accept` :string - Accept-type for request
-* `headers` :object - object with headers
-* `data` :object|string - object with data to send
-* `params` :object - object with params that will be added to the url, objects will be stringified
-* `responseConverter(rawResponse)` :function - function that will convert the response
+**`settings`**:
 
-#### success:
-* function that is called after successful request and takes response as argument, has priority over `settings.success`
+* `url` - URL
+  * can be relative (/form/update) or absolute (https://httpbin.org/get)
+* `success(response, xhr)` - function that is called after successful request
+* `error(response|error, xhr)` - function that is called after unsuccessful request
+* `fail(response|error, xhr)` - alias for `error`
+* `method` - http request method (GET, POST, ...). Default is GET
+* `pre(xhr)` - function that is called before sending
+* `post(xhr)` - function that is called after request is finished
+* `timeout` - number for timeout in milliseconds
+* `headers` - object with headers
+* `data` - data to send
+  * can be object or string
+* `params` - object with params that will be added to the url, objects will be stringified
+* `responseConverter(rawResponse)` - function that will convert the response
 
-#### error:
-* function that is called after failed request, has priority over `settings.error`
+**`success`**:
+* function that is called after successful request, has priority over `settings.success`
 
-These methods are just semantic sugar:
+**`error`**:
+* function that is called after unsuccessful request, has priority over `settings.error`
+
+```js
+booon.ajax({
+    url: "https://httpbin.org/get",
+    method: "GET",
+    pre: (xhr) => console.log("before sending..."),
+    post: (xhr) => console.log("after sending..."),
+    headers: { foo: "bar" },
+    params: { para: "meter" },
+    responseConverter: JSON.parse,
+    success: (res) => console.log(res.args),
+    fail: (res) => console.log("something went wrong", res)
+})
+```
 
 #### `booon.get(settings[,success[,error]]);`
+Performs an AJAX GET request.
 #### `booon.post(settings[,success[,error]]);`
+Performs an AJAX POST request.
 #### `booon.json(settings[,success[,error]]);`
+Performs an AJAX GET request and the answer will be parsed with `JSON.parse`.
 
 ## booon-nodebuilder 🛠️
 
 #### `booon.nodeBuilder(tag)`
-* creates a new NodeBuilder
-    * `attr(key, value)`
-    * `clazz(value)`
-    * `id(value)`
-    * `node(value)`
-    * `html(value)`
+Creates a new NodeBuilder. `tag` is the tag name.
+```js
+booon.nodeBuilder("div")
+```
+#### `attr(key, value)`
+Adds an attribute to the nodebuilder.
+```js
+booon.nodeBuilder("div").attr("foo","bar")
+```
+#### `id(id)`
+Adds the id to the nodebuilder.
+```js
+booon.nodeBuilder("div").id("unique")
+```
+#### `clazz(class)`
+Adds classes to the nodebuilder. `class` can be a string or an array of strings.
+```js
+booon.nodeBuilder("div").class("foo")
+booon.nodeBuilder("div").class(["foo", "baz"])
+```
+#### `html(html)`
+Sets html text for the node. `html` can be a string or another nodebuilder.
+```js
+booon.nodeBuilder("div").html("<b>foo</b>")
+booon.nodeBuilder("div").html(booon.nodeBuilder("b").html("foo"))
+```
+#### `node(node)`
+Adds a node to the nodebuilder which will be added as a child node to the building node. `node` can a string, another nodebuilder or an actual node.
+```js
+booon.nodeBuilder("div").node("<b>foo</b>")
+booon.nodeBuilder("div").node(booon.nodeBuilder("b").html("foo"))
+```
+#### `buildString()`
+Builds the node as an HTML string.
+```js
+booon.nodeBuilder("div")
+    .id("one")
+    .clazz(["full", "green"])
+    .attr("foo", "bar")
+    .node("<span>Alf</span>")
+    .buildString() // <div class="full green" id="one" foo="bar"><span>Alf</span></div>
+```
+
+#### `buildNode([parent])`
+Builds and returns the node. If a `parent` is provided (node or selector string), the built node will be appended to the parent node.
+```js
+// <main></main>
+booon.nodeBuilder("div")
+    .id("one")
+    .attr("foo", "bar")
+    .node("<span>Alf</span>")
+    .buildNode("main")
+// <main><div id="one" foo="bar"><span>Alf</span></div></main>
+```
 
 ## booon-adapt ⛓️
+
+This is a Vue-like framework.
+
+### Instance
+
+#### `booon.adapt(options)`
+Creates a new Adapt object.
+
+**`options`**
+##### `el`
+The element on which the adapt object is mounted. Even multiple elements are allowed.
+> One element must not be child of another one.
+
+```js
+booon.adapt({ el: "#main" })
+booon.adapt({ el: "#foo, #bar" })
+booon.adapt({ el: document.querySelectorAll("div") })
+```
+##### `data`
+An object that contains the attributes you need. The attributes are accessible on the instance.
+> Attribute names must not start with `_`. The same applies to method names.
+
+```js
+const instance = booon.adapt({
+    el: "#foo",
+    data: {
+        color: "green",
+        number: 10,
+        array: [1, 2, 3],
+        joinArray: function () {
+            return this.array.join("_")
+        }
+    }
+})
+instance.color // green
+instance.color = "red"
+instance.joinArray // 1_2_3
+```
+##### `methods`
+An object that contains the methods you need. The methods are accessible on the instance.
+```js
+const instance = booon.adapt({
+    el: "#foo",
+    data: {
+        array: [1, 2, 3]
+    },
+    methods: {
+        arrayLength: function () {
+            return this.array.length;
+        }
+    }
+})
+instance.arrayLength() // 3
+```
+##### `watch`
+An object that contains watchers. These watchers are called when a data attribute has changed. New value and old value will be provided as arguments.
+```js
+const instance = booon.adapt({
+    el: "#foo",
+    data: {
+        color: "green",
+        number: 10,
+    },
+    watch: {
+        color: function (newValue, oldValue) {
+            this.number += 10;
+        }
+    }
+})
+instance.number // 10
+instance.color = "red"
+instance.number // 20
+```
+##### `validate`
+An object that contains validators. These validators are called when a data attribute is about to change. The new value can be modified. If `undefined` is returned, the value will not be changed. Validators are called before watchers.
+```js
+const instance = booon.adapt({
+    el: "#foo",
+    data: {
+        number: 10,
+    },
+    validate: {
+        number: function (value) {
+            // increase until the value is divisible by 10
+            while (value % 10 !== 0) value++;
+            return value
+        }
+    }
+})
+instance.number // 10
+instance.number = 13
+instance.number // 20
+```
+##### `options`
+An object with additional options.
+* startTag (default: `{{`)
+* endTag (default: `}}`)
+```js
+const instance = booon.adapt({
+    el: "#foo",
+    data: {
+        number: 10,
+    },
+    options: {
+        startTag: "[[",
+        endTag: "]]",
+    }
+})
+```
+##### `init`
+An function that is called after the adapt object was initialized.
+```js
+const instance = booon.adapt({
+    el: "#foo",
+    data: {
+        number: 10,
+    },
+    init: function() { console.log(this.number) } // prints 10
+})
+```
+
+### Template
+Templates can be used within text nodes. Starttag and endtag can be changed in the options object.
+
+```html
+<main>
+    <p id="one">{{text}}</p>
+    <p id="two">Length: {{text.length}}</p>
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+        text: "lorem ipsum",
+    }
+})
+booon("#one").text() // lorem ipsum
+booon("#two").text() // Length: 11
+```
+
+### Directives
+
+#### `b-bind` (alias `:`)
+Binds an attribute from the instance to an attribute of the node. For the `class` attribute there is some special handling.
+```html
+<main>
+    <img b-bind:src="url">
+    <p class="foo" :class="class"></p>
+    <p id="one" :class="classes"></p>
+    <p id="alpha" :class="classObject"></p>
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+        url: "https://image.com",
+        class: "bar baz",
+        classes: ["two", "three"],
+        classObject: { beta: true, gamma: false }
+
+    },
+    init: function() { console.log(this.number) } // prints 10
+})
+booon("main>img").attr("src") // https://image.com
+booon("main>.foo")[0].className // foo bar baz
+booon("main>#one")[0].className // one two three
+booon("main>#alpha")[0].className // beta
+```

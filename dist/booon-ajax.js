@@ -63,9 +63,6 @@
                 err(e);
             }
         }
-        if (settings.accept) {
-            xhr.setRequestHeader("Accept", settings.accept);
-        }
         for (const [key, value] of Object.entries(settings.headers || {})) {
             xhr.setRequestHeader(key, value);
         }

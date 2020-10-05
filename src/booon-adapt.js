@@ -136,7 +136,10 @@
         });
         Object.keys(adapt._usedAttributes).forEach(key => {
             collect = new Set();
-            data[key].apply(adapt);
+            const res = data[key].apply(adapt);
+            if (!collect.size) {
+                adapt._cachedData[key] = res;
+            }
             adapt._usedAttributes[key] = Array.from(collect);
             collect.forEach(e => adapt._changedAttrs.add(e));
         });

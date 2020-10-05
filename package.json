@@ -37,5 +37,6 @@
     "string": "^3.3.3",
     "tap": "^14.10.8",
     "terser": "^5.3.4"
-  }
+  },
+  "idea":"bind property to adapt attribute, no text and html necessary"
 }

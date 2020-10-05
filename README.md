@@ -544,12 +544,164 @@ const instance = booon.adapt({
         class: "bar baz",
         classes: ["two", "three"],
         classObject: { beta: true, gamma: false }
-
     },
-    init: function() { console.log(this.number) } // prints 10
 })
 booon("main>img").attr("src") // https://image.com
 booon("main>.foo")[0].className // foo bar baz
 booon("main>#one")[0].className // one two three
 booon("main>#alpha")[0].className // beta
+```
+
+#### `b-style`
+Binds an attribute from the instance to the style of a node.
+```html
+<main>
+    <p class="foo" b-style="{color:'red', 'font-size':pixel+'px'}"></p>
+    <p class="bar" style="display: inline" b-style="{'background-color': bgColor}"></p>
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+        pixel: 13,
+        bgColor: "aqua"
+    },
+})
+booon("main>.foo").css("color") // red
+booon("main>.foo").css("font-size") // 13px
+booon("main>.bar").css("display") // inline
+booon("main>.bar").css("background-color") // aqua
+```
+#### `b-model`
+Binds an attribute from the instance to a property of the node and vice-versa. Use this on inputs to keep the attributes in sync. The `input` event is used to detect changes.
+##### Modifiers
+* `lazy`
+   * `change` event is used insted of `input` event
+
+```html
+<main>
+    <input class="text" type="text" b-model="text">
+    <input class="check" type="checkbox" b-model="check">
+    <input class="radio1" type="radio" value="r1" b-model="radio">
+    <input class="radio2" type="radio" value="r2" b-model="radio">
+    <textarea b-model.lazy="longtext"></textarea>
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+        text: "lorem",
+        check: true,
+        radio: "r1",
+        longtext: "very long text"
+    },
+})
+
+booon("main>.text").val() // lorem
+// do type 'ipsum' into input
+instance.text // ipsum
+instance.text = "dolor"
+booon("main>.text").val() // dolor
+
+booon("main>.check").prop("checked") // true
+// do uncheck checkbox
+instance.check // false
+
+booon("main>.radio1").prop("checked") // true
+booon("main>.radio2").prop("checked") // false
+instance.radio = "r2"
+booon("main>.radio1").prop("checked") // false
+booon("main>.radio2").prop("checked") // true
+
+booon("main>textarea").val() // very long text
+```
+
+#### `b-text`
+Binds an attribute from the instance to innerText property of the node.
+```html
+<main>
+    <p class="foo" b-text="text"></p>
+    <p class="bar" b-text="'<b>ipsum</b>'"></p>
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+        text: "lorem",
+    },
+})
+
+booon("main>.foo").text() // lorem
+booon("main>.bar").text() // <b>ipsum</b>
+```
+#### `b-html`
+Binds an attribute from the instance to innerHTML property of the node.
+```html
+<main>
+    <p class="foo" b-html="text"></p>
+    <p class="bar" b-html="'<b>ipsum</b>'"></p>
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+        text: "lorem",
+    },
+})
+
+booon("main>.foo").html() // lorem
+booon("main>.bar").html() // <b>ipsum</b>
+```
+#### `b-visible`
+Binds an attribute from the instance to visibility of the node.
+```html
+<main>
+    <p class="foo" b-visible="true"></p>
+    <p class="bar" b-visible="1===2"></p>
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+    },
+})
+
+booon("main>.foo").css("display") // ""
+booon("main>.bar").css("display") // none
+```
+#### `b-on` (alias `@`)
+Adds an event listener to the node. The current event is stored in `$event`.
+##### Modifiers
+* `once`
+   * event listener is called at most once
+* `capture`
+   * [`useCapture`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Parameters) is true
+```html
+<main>
+    <p class="foo" b-on.click="num++"></p>
+    <p class="bar" @keyup="keyup" @keydown="keydown('morph', $event)"></p>
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+        num: 0,
+        down: false
+    },
+    methods: {
+        keyup: function(event) {
+            this.down = false
+        },
+        keydown: function(text, event) {
+            this.down = true
+            console.log(text) // prints 'morph'
+        }
+    }
+})
 ```

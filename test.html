@@ -8,7 +8,7 @@
     <script src="dist/booon.min.js"></script>
     <script src="dist/booon-ajax.min.js"></script>
     <script src="dist/booon-nodebuilder.min.js"></script>
-    <script src="dist/booon-adapt.min.js"></script>
+    <script src="dist/booon-adapt.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <title>Tests</title>
 </head>
@@ -80,6 +80,7 @@
         </svg>
         <p>{{String(ruf).length}}</p>
         <p>{{ruf2}}</p>
+        <div b-html="alma"></div>
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
@@ -95,7 +96,7 @@
                     arr: [3, 4, { is: "ss" }],
                     f: "fin",
                     color: "dodgerblue",
-                    radio: "",
+                    radio: "d",
                     sel: "a",
                     obj: {
                         kino: "yes",
@@ -107,6 +108,15 @@
                     },
                     ruf2: function () {
                         return this.as + 100;
+                    },
+                    alma: function () {
+                        const that = this;
+                        return this.obj.arr.map(e => {
+                            return booon.nodeBuilder("p")
+                                .html("<b>" + e + "</b>")
+                                .buildString()
+                        }).join("")
+
                     },
                     n: 19
                 },

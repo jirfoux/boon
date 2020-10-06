@@ -122,7 +122,5 @@
     if (!window.booon) {
         window.booon = {};
     }
-    booon.nodeBuilder = function (tag) {
-        return new NodeBuilder(tag);
-    };
+    booon.nodeBuilder = (tag) => new NodeBuilder(tag);
 })();

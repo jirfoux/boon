@@ -198,26 +198,26 @@ window.booon = (function () {
         }
     }
 
-    function first(booon, func) {
+    const first = (booon, func) => {
         let element = booon[0];
         if (element) {
             return func(element);
         }
-    }
+    };
 
-    function distinct(elements) {
+    const distinct = (elements) => {
         return [...new Set(elements)];
-    }
+    };
 
-    function validNode(node) {
+    const validNode = (node) => {
         return node && (node.nodeType == Node.ELEMENT_NODE || node.nodeType == Node.DOCUMENT_NODE);
-    }
+    };
 
-    function toArray(value) {
+    const toArray = (value) => {
         return Array.isArray(value) ? value : [value];
-    }
+    };
 
-    function booon(value, ...args) {
+    const booon = (value, ...args) => {
         if (!value) return new Booon([]);
         let valueType = typeof value;
         if (value instanceof Booon) {
@@ -239,6 +239,6 @@ window.booon = (function () {
         } else {
             return new Booon([]);
         }
-    }
+    };
     return booon;
 })();

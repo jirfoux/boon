@@ -70,16 +70,16 @@
         }
     }
 
-    function setDirty(adapt) {
+    const setDirty = (adapt) => {
         if (!adapt._timeout) {
             adapt._timeout = setTimeout(() => {
                 applyDOMChanges(adapt);
                 adapt._timeout = null;
             }, 20);
         }
-    }
+    };
 
-    function enrichData(adapt, data, methods) {
+    const enrichData = (adapt, data, methods) => {
         adapt._usedAttributes = {};
         let collect;
         const validataPropertyName = (key) => {
@@ -94,9 +94,7 @@
             if (typeof value === "function") {
                 adapt._usedAttributes[key] = null;
                 Object.defineProperty(adapt, key, {
-                    get: function () {
-                        return adapt._cachedData[key];
-                    }
+                    get: () => adapt._cachedData[key]
                 });
                 return;
             }
@@ -110,7 +108,7 @@
                 enrichObject(value, callback);
             }
             Object.defineProperty(adapt, key, {
-                set: function (x) {
+                set: (x) => {
                     const old = data[key];
                     const validationResult = callValidator(adapt, key, x);
                     if (validationResult !== undefined) {
@@ -130,7 +128,7 @@
                         setDirty(adapt);
                     }
                 },
-                get: function () {
+                get: () => {
                     if (collect) {
                         collect.add(key);
                     }
@@ -141,9 +139,7 @@
         Object.keys(methods).forEach((key) => {
             validataPropertyName(key);
             Object.defineProperty(adapt, key, {
-                get: function () {
-                    return methods[key];
-                }
+                get: () => methods[key]
             });
         });
         Object.keys(adapt._usedAttributes).forEach((key) => {
@@ -159,9 +155,9 @@
         Object.freeze(adapt._usedAttributes);
 
         return data;
-    }
+    };
 
-    function enrichObject(object, callback) {
+    const enrichObject = (object, callback) => {
         Object.keys(object).forEach((k) => {
             if (!object._data) {
                 Object.defineProperty(object, "_data", { writable: true });
@@ -177,7 +173,7 @@
             }
             object._data[k] = object[k];
             Object.defineProperty(object, k, {
-                set: function (x) {
+                set: (x) => {
                     if (Array.isArray(x)) {
                         enrichArray(x, callback);
                     } else if (typeof x === "object") {
@@ -186,14 +182,12 @@
                     object._data[k] = x;
                     callback();
                 },
-                get: function () {
-                    return object._data[k];
-                }
+                get: () => object._data[k]
             });
         });
-    }
+    };
 
-    function enrichArray(array, callback) {
+    const enrichArray = (array, callback) => {
         if (!array.custo) {
             [
                 "push",
@@ -218,7 +212,7 @@
             });
             array.custo = true;
         }
-        function enrichElements() {
+        const enrichElements = () => {
             array.forEach((e) => {
                 if (Array.isArray(e)) {
                     enrichArray(e, callback);
@@ -226,11 +220,11 @@
                     enrichObject(e, callback);
                 }
             });
-        }
+        };
         enrichElements();
-    }
+    };
 
-    function callWatcher(adapt, key, oldValue, newValue) {
+    const callWatcher = (adapt, key, oldValue, newValue) => {
         const opts = adapt._options;
         const watch = opts.watch;
         if (watch) {
@@ -239,8 +233,8 @@
             }
         }
         adapt._changedAttrs.add(key);
-    }
-    function callValidator(adapt, key, newValue) {
+    };
+    const callValidator = (adapt, key, newValue) => {
         const opts = adapt._options;
         const validate = opts.validate;
         if (validate) {
@@ -248,9 +242,9 @@
                 return validate[key].apply(adapt, [newValue]);
             }
         }
-    }
+    };
 
-    function applyDOMChanges(adapt) {
+    const applyDOMChanges = (adapt) => {
         Object.entries(adapt._usedAttributes).forEach((e) => {
             if (e[1].some((a) => adapt._changedAttrs.has(a))) {
                 adapt._cachedData[e[0]] = adapt._data[e[0]].apply(adapt);
@@ -338,17 +332,55 @@
                 node.textContent = result;
             }
         });
-    }
+    };
 
-    function scanDOM(adapt) {
+    const scanDOM = (adapt) => {
         const reactNodes = [];
-        adapt._el.forEach(fillNodes);
-        function fillNodes(node) {
+        const isReactNode = (node) => {
+            // element node
+            if (node.nodeType == 1) {
+                const attrNames = node.getAttributeNames();
+                for (const name of attrNames) {
+                    if (dirs.includes(name) && node.getAttribute(name)) {
+                        return true;
+                    }
+                    if (dirsStarts.some((start) => name.startsWith(start))) {
+                        return true;
+                    }
+                }
+            } else if (node.nodeType == 3) {
+                // text node
+                const start = adapt._options.options.startTag || "{{";
+                const end = adapt._options.options.endTag || "}}";
+
+                const startInds = getIndicesOf(start, node.textContent);
+                const endInds = getIndicesOf(end, node.textContent);
+                if (startInds.length && startInds.length == endInds.length) {
+                    for (let i = 0; i < startInds.length; i++) {
+                        if (startInds[i] + start.length >= endInds[i]) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+        };
+        const fillNodes = (node) => {
             if (isReactNode(node)) {
                 reactNodes.push(node);
             }
             node.childNodes.forEach(fillNodes);
-        }
+        };
+        const getModifiers = (attr) => {
+            const res = [];
+            let index;
+            while ((index = attr.lastIndexOf(".")) !== -1) {
+                res.push(attr.slice(index + 1));
+                attr = attr.slice(0, index);
+            }
+            return res.reverse();
+        };
+        adapt._el.forEach(fillNodes);
 
         adapt._updateFunctions = reactNodes // .filter((val, i, self) => self.indexOf(val) === i)
             .map((node) => {
@@ -356,6 +388,11 @@
                 result.node = node;
                 if (node.nodeType == 1) {
                     const attrNames = node.getAttributeNames();
+                    const addFunc = (name) => {
+                        const expression = node.getAttribute(name);
+                        result.func = getFunction(adapt, expression);
+                        node.removeAttribute(name);
+                    };
                     attrNames.forEach((name) => {
                         if (
                             name.startsWith("b-bind:") ||
@@ -416,7 +453,7 @@
                         ) {
                             let event = name.slice(
                                 Math.max(name.indexOf(":"), name.indexOf("@")) +
-                                1
+                                    1
                             );
                             const index = event.indexOf(".");
                             if (index >= 0) {
@@ -434,7 +471,7 @@
                             };
                             node.addEventListener(
                                 event,
-                                function (e) {
+                                (e) => {
                                     adapt._event = e;
                                     func.apply(adapt);
                                     delete adapt._event;
@@ -442,14 +479,9 @@
                                 options
                             );
                             node.removeAttribute(name);
-                            result.func = () => { };
+                            result.func = () => {};
                         }
                     });
-                    function addFunc(name) {
-                        const expression = node.getAttribute(name);
-                        result.func = getFunction(adapt, expression);
-                        node.removeAttribute(name);
-                    }
                 } else {
                     result.expression = node.textContent;
                     result.areas = {};
@@ -472,50 +504,10 @@
                 }
                 return result;
             });
-
-        function getModifiers(attr) {
-            const res = [];
-            let index;
-            while ((index = attr.lastIndexOf(".")) !== -1) {
-                res.push(attr.slice(index + 1));
-                attr = attr.slice(0, index);
-            }
-            return res.reverse();
-        }
-
-        function isReactNode(node) {
-            // element node
-            if (node.nodeType == 1) {
-                const attrNames = node.getAttributeNames();
-                for (const name of attrNames) {
-                    if (dirs.includes(name) && node.getAttribute(name)) {
-                        return true;
-                    }
-                    if (dirsStarts.some((start) => name.startsWith(start))) {
-                        return true;
-                    }
-                }
-            } else if (node.nodeType == 3) {
-                // text node
-                const start = adapt._options.options.startTag || "{{";
-                const end = adapt._options.options.endTag || "}}";
-
-                const startInds = getIndicesOf(start, node.textContent);
-                const endInds = getIndicesOf(end, node.textContent);
-                if (startInds.length && startInds.length == endInds.length) {
-                    for (let i = 0; i < startInds.length; i++) {
-                        if (startInds[i] + start.length >= endInds[i]) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-            }
-        }
-    }
+    };
     const dirs = ["b-text", "b-html", "b-visible", "b-style"];
     const dirsStarts = ["b-on:", "@", "b-bind:", ":", "b-model"];
-    function getIndicesOf(searchStr, str) {
+    const getIndicesOf = (searchStr, str) => {
         const searchStrLen = searchStr.length;
         if (searchStrLen == 0) {
             return [];
@@ -528,9 +520,9 @@
             startIndex = index + searchStrLen;
         }
         return indices;
-    }
+    };
 
-    function getFunction(adapt, expression, isEvent) {
+    const getFunction = (adapt, expression, isEvent) => {
         expression = expression.trim();
         const datakeys = Object.keys(adapt._options.data || {});
 
@@ -587,16 +579,14 @@
             funcBody += funcSuffix;
         }
         return new Function(funcBody);
-    }
+    };
 
-    function toString(val) {
+    const toString = (val) => {
         return typeof val === "object" ? JSON.stringify(val) : val + "";
-    }
+    };
 
     if (!window.booon) {
         window.booon = {};
     }
-    booon.adapt = function (options) {
-        return new Adapt(options);
-    };
+    booon.adapt = (options) => new Adapt(options);
 })();

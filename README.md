@@ -34,22 +34,22 @@ Probably _not_ compatible with ![](https://upload.wikimedia.org/wikipedia/common
 Embed the library you need. There are no dependencies. Even not on one another.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/booon@x.x.x/booon.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/booon@x.x.x/booon-ajax.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/booon@x.x.x/booon-nodebuilder.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/booon@x.x.x/booon-adapt.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/booon@1.0.0/dist/booon.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/booon@1.0.0/dist/booon-ajax.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/booon@1.0.0/dist/booon-nodebuilder.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/booon@1.0.0/dist/booon-adapt.js"></script>
 ```
 
 Or download from [Github](https://github.com/Jelenkee/booon/tree/master/dist).
 
 ## booon ⛰️
 
-It is similiar to JQuery, but worse. If you are looking for an alternative to JQuery, click [here](https://www.educba.com/jquery-alternatives/).
+It is similar to JQuery, but worse. If you are looking for an alternative to JQuery, click [here](https://www.educba.com/jquery-alternatives/).
 
 ### Wrapper
 
 You can create a booon wrapper with the global function `booon`.
-The function accept a selector string, a node, an array of nodes, a NodeList or another booon wrapper.
+The function accepts a selector string, a node, an array of nodes, a NodeList or another booon wrapper.
 
 The wrapper contains an array of nodes. You can access the nodes with square brackets.
 
@@ -148,7 +148,7 @@ Returns a wrapper with the child nodes.
 booon("div.foo").children().length // 2
 ```
 #### `siblings([inclusive])`
-Returns a wrapper with the sibling nodes. If `inclusive` is truthy, the wrapper will contain the current nodes themself.
+Returns a wrapper with the sibling nodes. If `inclusive` is truthy, the wrapper will contain the current nodes themselves.
 ```js
 // <div><p class="foo">BAR</p><p>BAZ</p></div>
 booon("p.foo").siblings().length // 1
@@ -243,7 +243,7 @@ booon("p").text("bar")
 booon("p").text() // bar
 ```
 #### `attr(attribute[, value])`
-Changes or returns a attribute for current nodes.
+Changes or returns an attribute for current nodes.
 ```js
 booon("a").attr("href", "https://yesno.wtf/")
 booon("a").attr("href") // https://yesno.wtf/
@@ -354,7 +354,7 @@ booon.nodeBuilder("div").html("<b>foo</b>")
 booon.nodeBuilder("div").html(booon.nodeBuilder("b").html("foo"))
 ```
 #### `node(node)`
-Adds a node to the nodebuilder which will be added as a child node to the building node. `node` can a string, another nodebuilder or an actual node.
+Adds a node to the nodebuilder which will be added as a child node to the building node. `node` can be a string, another nodebuilder or an actual node.
 ```js
 booon.nodeBuilder("div").node("<b>foo</b>")
 booon.nodeBuilder("div").node(booon.nodeBuilder("b").html("foo"))
@@ -493,7 +493,7 @@ const instance = booon.adapt({
 })
 ```
 ##### `init`
-An function that is called after the adapt object was initialized.
+A function that is called after the adapt object was initialized.
 ```js
 const instance = booon.adapt({
     el: "#foo",

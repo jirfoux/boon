@@ -4,7 +4,7 @@
         window.booon = {};
     }
 
-    booon.ajax = function (settings, success, error) {
+    booon.ajax = (settings, success, error) => {
         const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (this.readyState == 4) {
@@ -27,7 +27,7 @@
                 }
             }
         };
-        function err(obj) {
+        const err = (obj) => {
             if (error) {
                 error(obj, xhr);
             } else {
@@ -36,7 +36,7 @@
                     func(obj, xhr);
                 }
             }
-        }
+        };
         xhr.ontimeout = (e) => err(e);
         if (settings.post) {
             xhr.onloadend = () => {
@@ -92,11 +92,11 @@
         return xhr;
     };
 
-    function serialize(obj) {
+    const serialize = (obj) => {
         const data = [];
         const enc = encodeURIComponent;
 
-        Object.keys(obj).forEach(function (k) {
+        Object.keys(obj).forEach((k) => {
             const element = obj[k];
             if (Array.isArray(element)) {
                 element.forEach((e) => data.push(enc(k) + "=" + enc(e)));
@@ -105,7 +105,7 @@
             }
         });
         return data.join("&");
-    }
+    };
     booon.get = (settings, success, error) => {
         settings.method = "get";
         booon.ajax(settings, success, error);

@@ -10,9 +10,9 @@ test("text", t => {
     t.plan(6);
     setTimeout(() => {
         const tNode = booon("#main>.text>.t")[0];
-        t.equal(tNode.innerText, adapt.html);
+        t.equal(tNode.innerHTML, adapt.html);
         const t2Node = booon("#main>.text>.t2")[0];
-        t.equal(t2Node.innerText, "88");
+        t.equal(t2Node.innerHTML, "88");
         const hNode = booon("#main>.text>.h")[0];
         t.equal(hNode.innerHTML, adapt.html);
         const temp1Node = booon("#main>.text>.temp1")[0];

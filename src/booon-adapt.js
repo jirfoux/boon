@@ -227,6 +227,19 @@
         }
     };
 
+    const getAllPropertyNames = (obj) => {
+        const props = [];
+        do {
+            Object.getOwnPropertyNames(obj).forEach(function (prop) {
+                if (!props.includes(prop)) {
+                    props.push(prop);
+                }
+            });
+        } while (obj = Object.getPrototypeOf(obj));
+
+        return props;
+    };
+
     const applyDOMChanges = (adapt) => {
         Object.entries(adapt._usedAttributes).forEach(e => {
             if (e[1].some(a => adapt._changedAttrs.has(a))) {
@@ -241,7 +254,7 @@
             if (node.nodeType == 1) {
                 const calculatedValue = uf.func.apply(adapt);
                 const calculatedString = toString(calculatedValue);
-                if (dir == "bind") {
+                if (dir == "attr") {
                     if (typeof calculatedValue != "object") {
                         if (node.getAttribute(attribute) !== calculatedString) {
                             node.setAttribute(attribute, calculatedString);
@@ -261,6 +274,12 @@
                     if (uf.initClass) {
                         uf.initClass.forEach(c => node.classList.add(c));
                     }
+                } else if (dir == "prop" && attribute) {
+                    const old = node[attribute];
+                    const neww = typeof old == "string" ? calculatedString : calculatedValue;
+                    if (old !== neww) {
+                        node[attribute] = neww;
+                    }
                 } else if (dir == "model") {
                     if (node.tagName.toLowerCase() == "input" && node.type == "checkbox") {
                         if (node.checked !== calculatedValue) {
@@ -274,14 +293,6 @@
                         if (node.value !== calculatedString) {
                             node.value = calculatedString;
                         }
-                    }
-                } else if (dir == "text") {
-                    if (node.innerText !== calculatedString) {
-                        node.innerText = calculatedString;
-                    }
-                } else if (dir == "html") {
-                    if (node.innerHTML !== calculatedString) {
-                        node.innerHTML = calculatedString;
                     }
                 } else if (dir == "visible") {
                     node.style["display"] = calculatedValue ? "" : "none";
@@ -351,25 +362,38 @@
             return res.reverse();
         };
         adapt._el.forEach(fillNodes);
-
         adapt._updateFunctions = reactNodes//.filter((val, i, self) => self.indexOf(val) === i)
-            .map(node => {
-                const result = {};
-                result.node = node;
+            .flatMap(node => {
+                const results = [];
                 if (node.nodeType == 1) {
                     const attrNames = node.getAttributeNames();
-                    const addFunc = (name) => {
-                        const expression = node.getAttribute(name);
-                        result.func = getFunction(adapt, expression);
-                        node.removeAttribute(name);
-                    };
                     attrNames.forEach(name => {
-                        if (name.startsWith("b-bind:") || name.startsWith(":")) {
-                            result.dir = "bind";
+                        const result = {};
+                        result.node = node;
+                        const addFunc = (name) => {
+                            const expression = node.getAttribute(name);
+                            result.func = getFunction(adapt, expression);
+                            node.removeAttribute(name);
+                        };
+                        if (name.startsWith("b-attr:") || name.startsWith(":")) {
+                            result.dir = "attr";
                             result.attribute = name.slice(name.indexOf(":") + 1);
                             if (result.attribute == "class") {
                                 result.initClass = Array.from(node.classList);
                             }
+                            addFunc(name);
+                        } else if (name.startsWith("b-prop:")) {
+                            result.dir = "prop";
+                            const attribute = name.slice(name.indexOf(":") + 1);
+                            let prop = null;
+
+                            const names = getAllPropertyNames(node);
+                            for (const name of names) {
+                                if (attribute.toLowerCase() == name.toLowerCase()) {
+                                    prop = name; break;
+                                }
+                            }
+                            result.attribute = prop;
                             addFunc(name);
                         } else if (name == "b-model" || name.startsWith("b-model.")) {
                             result.dir = "model";
@@ -383,12 +407,6 @@
                                     adapt[key] = this.value;
                                 }
                             });
-                            addFunc(name);
-                        } else if (name == "b-text") {
-                            result.dir = "text";
-                            addFunc(name);
-                        } else if (name == "b-html") {
-                            result.dir = "html";
                             addFunc(name);
                         } else if (name == "b-visible") {
                             result.dir = "visible";
@@ -423,8 +441,13 @@
                             node.removeAttribute(name);
                             result.func = () => { };
                         }
+                        if (result.dir) {
+                            results.push(result);
+                        }
                     });
                 } else {
+                    const result = {};
+                    result.node = node;
                     result.expression = node.textContent;
                     result.areas = {};
                     const start = adapt._options.options.startTag || "{{";
@@ -437,13 +460,13 @@
                         const val = key.slice(start.length, key.length - end.length);
                         result.areas[key] = getFunction(adapt, val);
                     }
+                    results.push(result);
                 }
-                return result;
+                return results;
             });
-
     };
-    const dirs = ["b-text", "b-html", "b-visible", "b-style"];
-    const dirsStarts = ["b-on:", "@", "b-bind:", ":", "b-model"];
+    const dirs = ["b-visible", "b-style"];
+    const dirsStarts = ["b-on:", "@", "b-attr:", ":", "b-model", "b-prop"];
     const getIndicesOf = (searchStr, str) => {
         const searchStrLen = searchStr.length;
         if (searchStrLen == 0) {

@@ -526,11 +526,11 @@ booon("#two").text() // Length: 11
 
 ### Directives
 
-#### `b-bind` (alias `:`)
+#### `b-attr` (alias `:`)
 Binds an attribute from the instance to an attribute of the node. For the `class` attribute there is some special handling.
 ```html
 <main>
-    <img b-bind:src="url">
+    <img b-attr:src="url">
     <p class="foo" :class="class"></p>
     <p id="one" :class="classes"></p>
     <p id="alpha" :class="classObject"></p>
@@ -551,7 +551,29 @@ booon("main>.foo")[0].className // foo bar baz
 booon("main>#one")[0].className // one two three
 booon("main>#alpha")[0].className // beta
 ```
+#### `b-prop`
+Binds an attribute from the instance to a property of the node.
+> Attribute names are case-insensitive. `b-prop:innerHTML` is equal to `b-prop:innerhtml`.
 
+```html
+<main>
+    <p class="foo" b-prop:innertext="text"></p>
+    <p class="bar" b-prop:innerHTML="'<b>ipsum</b>'"></p>
+    <input class="baz" b-prop:value="text+text">
+</main>
+```
+```js
+const instance = booon.adapt({
+    el: "main",
+    data: {
+        text: "lorem",
+    },
+})
+
+booon("main>.foo").text() // lorem
+booon("main>.bar").text() // ipsum
+booon("main>.baz").val() // loremlorem
+```
 #### `b-style`
 Binds an attribute from the instance to the style of a node.
 ```html
@@ -618,44 +640,6 @@ booon("main>.radio2").prop("checked") // true
 booon("main>textarea").val() // very long text
 ```
 
-#### `b-text`
-Binds an attribute from the instance to innerText property of the node.
-```html
-<main>
-    <p class="foo" b-text="text"></p>
-    <p class="bar" b-text="'<b>ipsum</b>'"></p>
-</main>
-```
-```js
-const instance = booon.adapt({
-    el: "main",
-    data: {
-        text: "lorem",
-    },
-})
-
-booon("main>.foo").text() // lorem
-booon("main>.bar").text() // <b>ipsum</b>
-```
-#### `b-html`
-Binds an attribute from the instance to innerHTML property of the node.
-```html
-<main>
-    <p class="foo" b-html="text"></p>
-    <p class="bar" b-html="'<b>ipsum</b>'"></p>
-</main>
-```
-```js
-const instance = booon.adapt({
-    el: "main",
-    data: {
-        text: "lorem",
-    },
-})
-
-booon("main>.foo").html() // lorem
-booon("main>.bar").html() // <b>ipsum</b>
-```
 #### `b-visible`
 Binds an attribute from the instance to visibility of the node.
 ```html

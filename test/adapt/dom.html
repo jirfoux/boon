@@ -19,9 +19,9 @@
             <p class="visible3" b-visible="c=='green'"></p>
         </div>
         <div class="bind">
-            <p class="string" b-bind:tank=" c"></p>
+            <p class="string" b-attr:tank=" c"></p>
             <p class="string-static" :tank="'z'  "></p>
-            <p class="wrong" :tank="{foo:'bar'}"></p>
+            <p class="wrong" :tank="{foo:'bar'}" :class="'foo'"></p>
             <p class="c-object" :class="{foo:true,bar:false}"></p>
             <p class="c-object2" :class="co"></p>
             <p class="c-string" :class="'brad pitt '"></p>
@@ -39,9 +39,9 @@
             <input class="t2" type="text" value="" b-model.lazy="text">
         </div>
         <div class="text">
-            <p class="t" b-text="html"></p>
-            <p class="t2" b-text="44*2"></p>
-            <p class="h" b-html="html"></p>
+            <p class="t" b-prop:innerhtml="html"></p>
+            <p class="t2" b-prop:innerhtml="44*2"></p>
+            <p class="h" b-prop:innerhtmL="html"></p>
             <p class="temp1">{{html}} tooth</p>
             <p class="temp2">{{1+1+1+1}} times</p>
         </div>
@@ -57,10 +57,10 @@
     </div>
     <div id="main2">
         <p class="tag">[[t%%%</p>
-        <p class="t" b-text="html"></p>
+        <p class="t" b-prop:innerhtml="html"></p>
     </div>
     <div id="main3">
-        <p class="t" b-text="t"></p>
+        <p class="t" b-prop:innerhtml="t"></p>
     </div>
 </body>
 

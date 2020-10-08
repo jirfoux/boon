@@ -43,13 +43,13 @@
         <!-- <span id="cool" b-html="'<h1>'+as+'</h1>'"></span> -->
         <div>
         </div>
-        <span class="pung" b-bind:class="{bongo:is}">Karl</span>
+        <span class="pung" b-attr:class="{bongo:is}">Karl</span>
         siebe n {{f}} mal {{as}}
         <br>
         {{55+77  }}
         <p b-html="as+' _ '+as"></p>
         <input type="text" b-model.lazy="as" value="win">
-        <div b-bind:title="as" style="color: red;" b-style="{'background-color':color}">wild</div>
+        <div b-attr:title="as" style="color: red;" b-style="{'background-color':color}">wild</div>
         <span b-visible="is">mies</span>
         <textarea name="fi" b-model="color" cols="30" rows="10"></textarea>
         <select b-model="color">
@@ -70,7 +70,7 @@
         <input type="radio" id="safg" value="d" b-model="radio">
         <input type="radio" id="bgsuk" value="e" b-model="radio">
         {{arr}}
-        <div id="green" b-text="obj"></div>
+        <div id="green" b-prop:innertext="obj" b-style="{'background-color':'gray'}">221</div>
         <p>{{ruf+12}}</p>
         <svg :width="as*3*7" height="100" viewbox="0 0 300 200">
             <desc>Flagge Norwegens</desc>
@@ -81,6 +81,10 @@
         <p>{{String(ruf).length}}</p>
         <p>{{ruf2}}</p>
         <div b-html="alma"></div>
+        <p b-prop:innerHTmL="f" class="karl" :class="'bim'"></p>
+        <input type="text" b-prop:value="f+f">
+        <div>ds <b>aw</b></div>
+        <input type="checkbox" b-prop:checked="is">
     </div>
     <script>
         //document.querySelector("#testobject").addEventListener("click", console.log)
@@ -195,7 +199,7 @@
         }
     </style>
     <div id="wand">
-        <h1 b-text="color">MIA</h1>
+        <h1 b-prop:innertext="color">MIA</h1>
     </div>
 
 </body>

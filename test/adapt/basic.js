@@ -45,8 +45,8 @@ test("error", t => {
         });
         setTimeout(() => {
             t.equal(a3._el.length, 2);
-            t.equal(booon("#main2>.t").text(), "T");
-            t.equal(booon("#main3>.t").text(), "T");
+            t.equal(booon("#main2>.t").html(), "T");
+            t.equal(booon("#main3>.t").html(), "T");
         }, 300);
 
     }, 300);

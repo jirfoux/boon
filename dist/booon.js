@@ -208,23 +208,11 @@ window.booon = (function () {
         }
 
         html(value) {
-            if (value === undefined) {
-                return first(this, (element) => element.innerHTML);
-            } else {
-                return this.each(
-                    (element) => (element.innerHTML = value || "")
-                );
-            }
+            return this.prop("innerHTML", value);
         }
 
         text(value) {
-            if (value === undefined) {
-                return first(this, (element) => element.innerText);
-            } else {
-                return this.each(
-                    (element) => (element.innerText = value || "")
-                );
-            }
+            return this.prop("innerText", value);
         }
 
         attr(attribute, value) {

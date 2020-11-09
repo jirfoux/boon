@@ -50,7 +50,7 @@
                     opts.init.apply(that);
                 }
             };
-            if (document.readyState == "complete") {
+            if (document.readyState != "loading") {
                 load();
             } else {
                 document.addEventListener("DOMContentLoaded", load);
@@ -305,7 +305,7 @@
                         node.setAttribute("style", uf.initStyle + node.getAttribute("style"));
                     }
                 }
-            } else if (node.nodeType == 3) {
+            } else {
                 let result = uf.expression;
                 Object.entries(uf.areas).forEach(e => {
                     result = result.split(e[0]).join(toString(e[1].apply(adapt)));

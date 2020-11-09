@@ -62,7 +62,7 @@
                     opts.init.apply(that);
                 }
             };
-            if (document.readyState == "complete") {
+            if (document.readyState != "loading") {
                 load();
             } else {
                 document.addEventListener("DOMContentLoaded", load);

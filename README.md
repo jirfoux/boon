@@ -548,11 +548,11 @@ const instance = booon.adapt({
 })
 booon("main>img").attr("src") // https://image.com
 booon("main>.foo")[0].className // foo bar baz
-booon("main>#one")[0].className // one two three
+booon("main>#one")[0].className // two three
 booon("main>#alpha")[0].className // beta
 ```
 #### `b-prop`
-Binds an attribute from the instance to a property of the node.
+Binds an attribute from the instance to a property of the node. It works only for existing properties.
 > Attribute names are case-insensitive. `b-prop:innerHTML` is equal to `b-prop:innerhtml`.
 
 ```html
@@ -599,7 +599,7 @@ booon("main>.bar").css("background-color") // aqua
 Binds an attribute from the instance to a property of the node and vice-versa. Use this on inputs to keep the attributes in sync. The `input` event is used to detect changes.
 ##### Modifiers
 * `lazy`
-   * `change` event is used insted of `input` event
+   * `change` event is used instead of `input` event
 
 ```html
 <main>
